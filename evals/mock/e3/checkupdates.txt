@@ -1,0 +1,6 @@
+pipewire 1.4.0-1
+pipewire-jack 1.4.0-1
+pipewire-alsa 1.4.0-1
+wireplumber 0.5.6-1
+glibc 2.41-1 2.40-1
+systemd 256.6-1

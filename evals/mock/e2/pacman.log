@@ -1,0 +1,4 @@
+[2025-01-15T12:00:00+0800] [PACMAN] Running 'pacman -Syu'
+[2025-01-15T12:01:00+0800] [PACMAN] synchronizing package lists
+[2025-01-15T12:05:00+0800] [PACMAN] starting full system upgrade
+[2025-01-15T12:10:00+0800] [ALPM] upgraded glibc (2.38-1 -> 2.39-1)

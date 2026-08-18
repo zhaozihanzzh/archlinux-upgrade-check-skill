@@ -1,0 +1,63 @@
+{
+  "skill_name": "archlinux-upgrade-check-skill",
+  "evals": [
+    {
+      "id": 1,
+      "name": "regular-upgrade",
+      "prompt": "我要跑 pacman -Syu 了，先帮我检查下 Arch 官网新闻和论坛有没有需要手动干预的地方。我大概两周前更新的。",
+      "script_assertions": [
+        {"name": "script-exit-0", "description": "arch_upgrade_check.py exits with code 0", "type": "exit_code"},
+        {"name": "has-valid-json", "description": "Output is valid JSON when --json mode is used", "type": "json_valid"},
+        {"name": "has-required-fields", "description": "JSON report contains status, since_date, matches fields", "type": "json_fields", "fields": ["status", "since_date", "matches"]}
+      ],
+      "skill_assertions": [
+        {"name": "no-crash", "description": "pi subagent exits successfully", "type": "exit_code"}
+      ],
+      "mock_args": {
+        "pacman_log": "evals/mock/e1/pacman.log",
+        "checkupdates": "evals/mock/e1/checkupdates.txt",
+        "http_dir": "evals/mock/e1/http/"
+      },
+      "script_args": ["--json"]
+    },
+    {
+      "id": 2,
+      "name": "long-time-no-upgrade",
+      "prompt": "我有一台服务器一年半没更新了，之前都是直接 pacman -Syu 的。帮我看看这次升级有没有什么要注意的。",
+      "script_assertions": [
+        {"name": "lookback-capped", "description": "Report has lookback_capped=true when user is >1yr behind", "type": "json_field_value", "field": "lookback_capped", "expected": true},
+        {"name": "archive-warning", "description": "Output mentions archive.archlinux.org recommendation", "type": "text_contains", "source": "stderr", "expected": "archive.archlinux.org"}
+      ],
+      "skill_assertions": [
+        {"name": "no-crash", "description": "pi subagent exits successfully", "type": "exit_code"}
+      ],
+      "mock_args": {
+        "pacman_log": "evals/mock/e2/pacman.log",
+        "checkupdates": "evals/mock/e2/checkupdates.txt",
+        "http_dir": "evals/mock/e2/http/"
+      },
+      "script_args": ["--json"]
+    },
+    {
+      "id": 3,
+      "name": "custom-days",
+      "prompt": "帮我检查一下最近 90 天 Arch 社区有没有提到 pipewire 升级相关的问题。",
+      "script_assertions": [
+        {"name": "no-crash-120s", "description": "Script completes within 120 seconds", "type": "timeout", "max_seconds": 120},
+        {"name": "script-exit-0", "description": "arch_upgrade_check.py exits with code 0", "type": "exit_code"},
+        {"name": "has-valid-json", "description": "Output is valid JSON", "type": "json_valid"},
+        {"name": "matches-found", "description": "Script found at least one match for --days 90", "type": "json_field_value", "field": "match_count", "expected": 1}
+      ],
+      "skill_assertions": [
+        {"name": "no-crash", "description": "pi subagent exits successfully", "type": "exit_code"},
+        {"name": "uses-days-flag", "description": "LLM correctly uses --days 90 to limit the scan window", "type": "text_contains", "source": "stdout", "expected": "90"},
+        {"name": "mentions-pipewire", "description": "LLM reports pipewire-related findings", "type": "text_contains", "source": "stdout", "expected": "pipewire"}
+      ],
+      "mock_args": {
+        "checkupdates": "evals/mock/e3/checkupdates.txt",
+        "http_dir": "evals/mock/e3/http/"
+      },
+      "script_args": ["--days", "90", "--json"]
+    }
+  ]
+}

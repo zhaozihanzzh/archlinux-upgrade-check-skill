@@ -1,0 +1,938 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Crash during pacman -Syu and now system freezes intermittently / Pacman &amp; Package Upgrade Issues / Arch Linux Forums</title>
+<link rel="stylesheet" type="text/css" href="style/ArchLinux.css" />
+<link rel="canonical" href="viewtopic.php?id=314363" title="Page 1" />
+<link rel="next" href="viewtopic.php?id=314363&amp;p=2" title="Page 2" />
+<link rel="alternate" type="application/atom+xml" href="extern.php?action=feed&amp;tid=314363&amp;type=atom" title="Atom topic feed" />
+    <link rel="stylesheet" media="screen" href="style/ArchLinux/arch.css?v=5"/>
+        <link rel="stylesheet" media="screen" href="style/ArchLinux/archnavbar.css?v=5"/>
+    
+<link rel="shortcut icon" href="style/ArchLinux/favicon.ico" />
+</head>
+
+<body>
+<div id="archnavbar" class="anb-forum">
+	<div id="archnavbarlogo"><h1><a href="http://archlinux.org/">Arch Linux</a></h1></div>
+	<div id="archnavbarmenu">
+		<ul id="archnavbarlist">
+			<li id="anb-home"><a href="http://archlinux.org/">Home</a></li><li id="anb-packages"><a href="http://archlinux.org/packages/">Packages</a></li><li id="anb-forums" class="anb-selected"><a href="https://bbs.archlinux.org/">Forums</a></li><li id="anb-wiki"><a href="https://wiki.archlinux.org/">Wiki</a></li><li id="anb-gitlab"><a href="https://gitlab.archlinux.org/archlinux">GitLab</a></li><li id="anb-security"><a href="https://security.archlinux.org/">Security</a></li><li id="anb-aur"><a href="https://aur.archlinux.org/">AUR</a></li><li id="anb-download"><a href="http://archlinux.org/download/">Download</a></li>		</ul>
+	</div>
+</div>
+
+
+<div id="punviewtopic" class="pun">
+<div class="top-box"></div>
+<div class="punwrap">
+
+<div id="brdheader" class="block">
+	<div class="box">
+		<div id="brdmenu" class="inbox">
+			<ul>
+				<li id="navindex" class="isactive"><a href="index.php">Index</a></li>
+				<li id="navrules"><a href="misc.php?action=rules">Rules</a></li>
+				<li id="navsearch"><a href="search.php">Search</a></li>
+				<li id="navregister"><a href="register.php">Register</a></li>
+				<li id="navlogin"><a href="login.php">Login</a></li>
+			</ul>
+		</div>
+		<div id="brdwelcome" class="inbox">
+			<p class="conl">You are not logged in.</p>
+			<ul class="conr">
+				<li><span>Topics: <a href="search.php?action=show_recent" title="Find topics with recent posts.">Active</a> | <a href="search.php?action=show_unanswered" title="Find topics with no replies.">Unanswered</a></span></li>
+			</ul>
+			<div class="clearer"></div>
+		</div>
+	</div>
+</div>
+
+
+
+<div id="brdmain">
+<div class="linkst">
+	<div class="inbox crumbsplus">
+		<ul class="crumbs">
+			<li><a href="index.php">Index</a></li>
+			<li><span>»&#160;</span><a href="viewforum.php?id=44">Pacman &amp; Package Upgrade Issues</a></li>
+			<li><span>»&#160;</span><strong><a href="viewtopic.php?id=314363">Crash during pacman -Syu and now system freezes intermittently</a></strong></li>
+		</ul>
+		<div class="pagepost">
+			<p class="pagelink conl"><span class="pages-label">Pages: </span><strong class="item1">1</strong> <a href="viewtopic.php?id=314363&amp;p=2">2</a> <a rel="next" href="viewtopic.php?id=314363&amp;p=2">Next</a></p>
+		</div>
+		<div class="clearer"></div>
+	</div>
+</div>
+
+<div id="p2305367" class="blockpost rowodd firstpost blockpost1">
+	<h2><span><span class="conr">#1</span> <a href="viewtopic.php?pid=2305367#p2305367">2026-07-23 15:45:16</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>KaibutsuX</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2015-04-22</span></dd>
+						<dd><span>Posts: 38</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p>First time I&#039;ve ever had a crash during a system upgrade and when I rebooted nothing worked so I started manually reinstalling all of the packages that were a part of the last upgrade. It finally let me login, but now I&#039;m getting intermittent and random system freezes.</p><p>The mouse stops responding, no caps lock, if audio is playing it just plays the last 2 seconds in a loop. Can&#039;t Ctrl-Alt-F2 to switch to another tty. All I can do is reboot.</p><p>journalctl -b-1 shows no warnings or errors even with an hour of the freeze.</p><p>Here&#039;s what I&#039;ve tried:</p><p>* Disabled all non-essential &quot;/&#039; mountpoints to ensure it&#039;s not an external disk issue<br />* Tried latest kernel and linux-lts (6.18.39-1)<br />* Killed any non-essential programs while running (steam, qbittorrent, conky) other than remmina (for work) and librewolf<br />* Upgraded the system everytime I have to reboot<br />* Reinstalled any amd* related pacman pkgs for video drivers<br />* Installed the pactime aur package, sorted by time and reinstalled EVERY single pkg in the list, so essentially the entire system</p><p>What else can I try? The system was rock solid up until this update, I think it was a power surge that caused the crash, it was during some thunderstorms. Other than re-installing the system, I&#039;m not sure what else I can try or investigate, I doubt the freeze is leading to anything being logged to a file or the journal.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305371" class="blockpost roweven">
+	<h2><span><span class="conr">#2</span> <a href="viewtopic.php?pid=2305371#p2305371">2026-07-23 16:18:16</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>seth</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/63451.png?m=1751375556" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Won&#039;t reply 2 private help req</span></dd>
+						<dd><span>Registered: 2012-09-03</span></dd>
+						<dd><span>Posts: 77,379</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<div class="codebox"><pre><code>sudo LC_ALL=C pacman -Qkk | grep -v &#039;, 0 altered files&#039; | grep -v backup</code></pre></div><p>Though I suspect the subject confuses cause and effect - can you keep &quot;dmesg -w&quot; running in a permanently visible terminal? Maybe is shows something before the kernel halts.</p>
+					</div>
+					<div class="postsignature postmsg"><hr /><p><a href="http://wiki.archlinux.org/title/List_of_applications/Internet#Without_a_dedicated_client" rel="nofollow">How to upload text</a> · <a href="http://wiki.archlinux.org/title/Systemd#Change_default_target_to_boot_into" rel="nofollow">How to boot w/o GUI</a> · <a href="http://wiki.archlinux.org/title/Dual_boot_with_Windows#Fast_Startup_and_hibernation" rel="nofollow">Disable Windows Fast-Start!</a> · <a href="http://wiki.archlinux.org/title/Xinit#xinitrc" rel="nofollow">Fix your xinitrc</a></p></div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305373" class="blockpost rowodd">
+	<h2><span><span class="conr">#3</span> <a href="viewtopic.php?pid=2305373#p2305373">2026-07-23 16:30:30</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>KaibutsuX</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2015-04-22</span></dd>
+						<dd><span>Posts: 38</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p>Oh yeah, forgot to list that I already went through the -Qkk and reinstalled all of those:</p><div class="codebox"><pre><code>warning: amd-ucode: /boot/amd-ucode.img (Permissions mismatch)
+warning: cups: /etc/cups/classes.conf (Permissions mismatch)
+warning: cups: /etc/cups/printers.conf (Permissions mismatch)
+warning: libutempter: /usr/lib/utempter/utempter (GID mismatch)
+warning: libutempter: /usr/lib/utempter/utempter (Permissions mismatch)
+warning: libvlc: /usr/lib/vlc/plugins/plugins.dat (Modification time mismatch)
+warning: libvlc: /usr/lib/vlc/plugins/plugins.dat (Size mismatch)
+warning: libvlc: /usr/lib/vlc/plugins/plugins.dat (SHA256 checksum mismatch)
+warning: openssl: /etc/ssl/private (Permissions mismatch)
+warning: systemd: /var/log/journal (GID mismatch)
+amd-ucode: 17 total files, 1 altered file
+cups: 947 total files, 2 altered files
+libutempter: 20 total files, 1 altered file
+libvlc: 120 total files, 1 altered file
+openssl: 6748 total files, 1 altered file
+systemd: 1918 total files, 1 altered file</code></pre></div><p>demsg is running now, waiting for a freeze.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305389" class="blockpost roweven">
+	<h2><span><span class="conr">#4</span> <a href="viewtopic.php?pid=2305389#p2305389">2026-07-23 19:53:11</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>KaibutsuX</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2015-04-22</span></dd>
+						<dd><span>Posts: 38</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p>Another freeze. Happened literally the same second I clicked in the browser. Nothing in dmesg, nothing in journalctl -b-1. Updated my bios at the reboot.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305392" class="blockpost rowodd">
+	<h2><span><span class="conr">#5</span> <a href="viewtopic.php?pid=2305392#p2305392">2026-07-23 20:52:25</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>aminepro</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/166081.png?m=1783791664" width="79" height="79" alt="" /></dd>
+						<dd><span>Registered: 2025-01-31</span></dd>
+						<dd><span>Posts: 107</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<div class="quotebox"><cite>KaibutsuX wrote:</cite><blockquote><div><p>Another freeze. Happened literally the same second I clicked in the browser. Nothing in dmesg, nothing in journalctl -b-1. Updated my bios at the reboot.</p></div></blockquote></div><p>I really want to see how that would be solved, try this <a href="https://wiki.archlinux.org/title/Keyboard_shortcuts" rel="nofollow">https://wiki.archlinux.org/title/Keyboard_shortcuts</a>, maybe when the system freezes you hard reset it (using button shutdown), I think you can try shutting down sepecific things to check. {even though I have no experience on that}</p><p>I just remembered something similar happened to my system for about 7 seconds after opening the browser (don&#039;t really remember what else} three days ago, but everything returned to normal afterwards so I ignored it {thought it may be memory related but didn&#039;t check}, I&#039;m using dwm and as mpv was playing it started to loop until the end of the crash, I update my system daily btw cause I have a fast connection <img src="https://bbs.archlinux.org/img/smilies/smile.png" width="15" height="15" alt="smile" /></p>
+						<p class="postedit"><em>Last edited by aminepro (2026-07-23 20:59:45)</em></p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305416" class="blockpost roweven">
+	<h2><span><span class="conr">#6</span> <a href="viewtopic.php?pid=2305416#p2305416">2026-07-24 05:44:31</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>seth</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/63451.png?m=1751375556" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Won&#039;t reply 2 private help req</span></dd>
+						<dd><span>Registered: 2012-09-03</span></dd>
+						<dd><span>Posts: 77,379</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p>Specifically <a href="https://wiki.archlinux.org/title/Keyboard_shortcuts#Kernel_(SysRq)" rel="nofollow">https://wiki.archlinux.org/title/Keyboa … el_(SysRq)</a> but if there&#039;re no errors in the live dmesg that&#039;s not even overly likely.<br />=&gt; <a href="https://wiki.archlinux.org/title/Kdump" rel="nofollow">https://wiki.archlinux.org/title/Kdump</a></p><p>Still post your system journal for a general oversight so we can round up the usual suspects, eg. <a href="https://wiki.archlinux.org/title/Ryzen#Troubleshooting" rel="nofollow">https://wiki.archlinux.org/title/Ryzen#Troubleshooting</a><br />Are you overclocking the system in any way shape or form? (XMP etc?)</p>
+					</div>
+					<div class="postsignature postmsg"><hr /><p><a href="http://wiki.archlinux.org/title/List_of_applications/Internet#Without_a_dedicated_client" rel="nofollow">How to upload text</a> · <a href="http://wiki.archlinux.org/title/Systemd#Change_default_target_to_boot_into" rel="nofollow">How to boot w/o GUI</a> · <a href="http://wiki.archlinux.org/title/Dual_boot_with_Windows#Fast_Startup_and_hibernation" rel="nofollow">Disable Windows Fast-Start!</a> · <a href="http://wiki.archlinux.org/title/Xinit#xinitrc" rel="nofollow">Fix your xinitrc</a></p></div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305437" class="blockpost rowodd">
+	<h2><span><span class="conr">#7</span> <a href="viewtopic.php?pid=2305437#p2305437">2026-07-24 12:07:00</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>KaibutsuX</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2015-04-22</span></dd>
+						<dd><span>Posts: 38</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p>Nope, no overclocking, no custom kernels. All was perfect until a borked pacman -Syu.</p><p>I did see the System Halts section, but I&#039;m not sure what PBO means in the context of: &quot;then apply the PBO+4 curve for more stability&quot;</p><p>Also installed kdumpst to see if I can get a dump at next freeze.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305448" class="blockpost roweven">
+	<h2><span><span class="conr">#8</span> <a href="viewtopic.php?pid=2305448#p2305448">2026-07-24 15:31:28</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>seth</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/63451.png?m=1751375556" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Won&#039;t reply 2 private help req</span></dd>
+						<dd><span>Registered: 2012-09-03</span></dd>
+						<dd><span>Posts: 77,379</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p>Do you have a ryzen CPU?<br />Please post your complete system journal for the boot: </p><div class="codebox"><pre><code>sudo journalctl -b | curl -s -H &quot;Accept: application/json, */*&quot; --upload-file - &#039;https://paste.c-net.org/&#039;</code></pre></div><p>(Just to illustrate the system we&#039;re facing)</p>
+					</div>
+					<div class="postsignature postmsg"><hr /><p><a href="http://wiki.archlinux.org/title/List_of_applications/Internet#Without_a_dedicated_client" rel="nofollow">How to upload text</a> · <a href="http://wiki.archlinux.org/title/Systemd#Change_default_target_to_boot_into" rel="nofollow">How to boot w/o GUI</a> · <a href="http://wiki.archlinux.org/title/Dual_boot_with_Windows#Fast_Startup_and_hibernation" rel="nofollow">Disable Windows Fast-Start!</a> · <a href="http://wiki.archlinux.org/title/Xinit#xinitrc" rel="nofollow">Fix your xinitrc</a></p></div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305449" class="blockpost rowodd">
+	<h2><span><span class="conr">#9</span> <a href="viewtopic.php?pid=2305449#p2305449">2026-07-24 15:36:05</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>KaibutsuX</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2015-04-22</span></dd>
+						<dd><span>Posts: 38</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p>Yes, Ryzen 9 9950X</p><p><a href="https://paste.c-net.org/ShortestSwayed" rel="nofollow">CpuID</a> </p><p><a href="https://paste.c-net.org/InhalerTackle" rel="nofollow">Journal</a></p><p>Uname -a =&gt; Linux mira 6.18.39-1-lts #1 SMP PREEMPT_DYNAMIC Sat, 18 Jul 2026 18:11:01 +0000 x86_64 GNU/Linux</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305451" class="blockpost roweven">
+	<h2><span><span class="conr">#10</span> <a href="viewtopic.php?pid=2305451#p2305451">2026-07-24 15:58:55</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>seth</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/63451.png?m=1751375556" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Won&#039;t reply 2 private help req</span></dd>
+						<dd><span>Registered: 2012-09-03</span></dd>
+						<dd><span>Posts: 77,379</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p>There&#039;s the APU and a Radeon RX 9060 XT, can you run the system on the integrated graphics for a while and see whether that has impact on the stability?</p><div class="codebox"><pre><code>ASUS System Product Name/PRIME X870-P WIFI, BIOS 1644 03/10/2026</code></pre></div><p>Not sure whether it does (eg. the TUF stuff seems to have castrated UEFI options) but the PBO curve optimizer is a BIOS/UEFI option - you&#039;re basically running the CPU at higher voltages what keeps it &quot;warmer&quot; and prevents it from overdriving isolated cores toomuch™<br />Disabling the c-states might have similar impact, but at the cost of quite higher power draws (and it&#039;s not as reliable)<br />There&#039;s also <a href="https://archlinux.org/packages/extra/x86_64/corectrl/" rel="nofollow">https://archlinux.org/packages/extra/x86_64/corectrl/</a> (you *want* to use the UEFI settings if they&#039;re available)</p><p>If it&#039;s not the CPU/GPU, for the moment just ftr, there&#039;s a Micron/Crucial Technology T500 NVMe</p>
+					</div>
+					<div class="postsignature postmsg"><hr /><p><a href="http://wiki.archlinux.org/title/List_of_applications/Internet#Without_a_dedicated_client" rel="nofollow">How to upload text</a> · <a href="http://wiki.archlinux.org/title/Systemd#Change_default_target_to_boot_into" rel="nofollow">How to boot w/o GUI</a> · <a href="http://wiki.archlinux.org/title/Dual_boot_with_Windows#Fast_Startup_and_hibernation" rel="nofollow">Disable Windows Fast-Start!</a> · <a href="http://wiki.archlinux.org/title/Xinit#xinitrc" rel="nofollow">Fix your xinitrc</a></p></div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305456" class="blockpost rowodd">
+	<h2><span><span class="conr">#11</span> <a href="viewtopic.php?pid=2305456#p2305456">2026-07-24 17:04:25</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>KaibutsuX</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2015-04-22</span></dd>
+						<dd><span>Posts: 38</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p>I&#039;ve never actually used the integrated graphics because I have to run 2 monitors, so that&#039;s out. I looked in the bios for power management features but the only things I saw were Wake On Lan and 1 other thing that now I can&#039;t remember, but they were both disabled.</p><p>The NVME reports no smart errors in the bios SMART util.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305457" class="blockpost roweven">
+	<h2><span><span class="conr">#12</span> <a href="viewtopic.php?pid=2305457#p2305457">2026-07-24 17:14:17</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>seth</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/63451.png?m=1751375556" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Won&#039;t reply 2 private help req</span></dd>
+						<dd><span>Registered: 2012-09-03</span></dd>
+						<dd><span>Posts: 77,379</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p><a href="https://www.asus.com/de/motherboards-components/motherboards/prime/prime-x870-p-wifi/" rel="nofollow">https://www.asus.com/de/motherboards-co … 70-p-wifi/</a> makes it look like there&#039;re some elaborate settings and certainly PBO control?</p><p>Even if it was the nvme that would not relate to smart errors (broken memory modules) but the bus, again: only for later.<br />Focus on the CPU and related to that the GPU.</p>
+					</div>
+					<div class="postsignature postmsg"><hr /><p><a href="http://wiki.archlinux.org/title/List_of_applications/Internet#Without_a_dedicated_client" rel="nofollow">How to upload text</a> · <a href="http://wiki.archlinux.org/title/Systemd#Change_default_target_to_boot_into" rel="nofollow">How to boot w/o GUI</a> · <a href="http://wiki.archlinux.org/title/Dual_boot_with_Windows#Fast_Startup_and_hibernation" rel="nofollow">Disable Windows Fast-Start!</a> · <a href="http://wiki.archlinux.org/title/Xinit#xinitrc" rel="nofollow">Fix your xinitrc</a></p></div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305740" class="blockpost rowodd">
+	<h2><span><span class="conr">#13</span> <a href="viewtopic.php?pid=2305740#p2305740">2026-07-28 02:14:05</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>KaibutsuX</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2015-04-22</span></dd>
+						<dd><span>Posts: 38</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p>Just a quick update, reinstalled my arch system from scratch, reinstalled librewolf from source and while that was compiling, installed steam and associated vulkan-radeon drivers, mesa etc. Literally within 5 minutes of getting that done it locked up again.</p><p>So I started over and decided to leave my video drivers alone for a while. Re-installed arch again, this time only installed firefox so I could use the machine. Installed remmina so I could rdp to my work laptop. System seemed pretty stable, played music, surfed the web. Then I came back that evening, it was still up.</p><p>Decided to install a few minor utils and some files from backup to my desktop. Did a `sudo pacman -S vlc` and selected all plugins. It froze within 30s and I didn&#039;t even start vlc. It could be a coincidence, but now I&#039;ve uninstalled vlc and I&#039;m leaving my system overnight with no extra gpu drivers and no vlc.</p><p>We&#039;ll see what happens.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305796" class="blockpost roweven">
+	<h2><span><span class="conr">#14</span> <a href="viewtopic.php?pid=2305796#p2305796">2026-07-28 15:24:55</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>KaibutsuX</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2015-04-22</span></dd>
+						<dd><span>Posts: 38</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p>System seemed relatively stable, installed steam today after enabling the 32-bit multilib. Logged the pkgs installed:</p><div class="codebox"><pre><code>Packages (95) alsa-plugins-1:1.2.12-5  appstream-1.1.5-1  hwloc-2.14.0-1  lib32-alsa-lib-1.2.16.1-1  lib32-alsa-plugins-1.2.12-1
+              lib32-brotli-1.2.0-2  lib32-bzip2-1.0.8-4  lib32-curl-8.21.0-1  lib32-dbus-1.16.2-1  lib32-e2fsprogs-1.47.4-1
+              lib32-expat-2.8.2-1  lib32-fontconfig-2:2.18.2-1  lib32-freetype2-2.14.3-1
+              lib32-gcc-libs-16.1.1+r581+gb73ad535acaa-1  lib32-glib2-2.88.2-1  lib32-glibc-2.44+r3+g0b05bc142249-1
+              lib32-gmp-6.3.0-2  lib32-gnutls-3.8.13-3  lib32-icu-78.3-1  lib32-json-c-0.19-1  lib32-keyutils-1.6.3-4
+              lib32-krb5-1.22.2-1  lib32-libdisplay-info-0.3.0-1  lib32-libdrm-2.4.134-1  lib32-libelf-0.195-1
+              lib32-libffi-3.7.1-1  lib32-libgcrypt-1.12.2-1  lib32-libglvnd-1.7.0-1  lib32-libgpg-error-1.61-1
+              lib32-libidn2-2.3.8-1  lib32-libldap-2.6.13-1  lib32-libnghttp2-1.69.0-1  lib32-libnghttp3-1.18.0-1
+              lib32-libngtcp2-1.25.0-1  lib32-libnm-1.58.0-1  lib32-libpciaccess-0.19-1  lib32-libpipewire-1:1.6.8-1
+              lib32-libpng-1.6.58-2  lib32-libpsl-0.21.5-1  lib32-libssh2-1.11.1-4  lib32-libtasn1-4.21.0-1
+              lib32-libunistring-1.4.2-1  lib32-libva-2.24.1-1  lib32-libx11-1.8.13-1  lib32-libxau-1.0.12-1
+              lib32-libxcb-1.17.0-1  lib32-libxcrypt-4.5.2-1  lib32-libxcrypt-compat-4.5.2-1  lib32-libxdmcp-1.1.5-1
+              lib32-libxext-1.3.7-1  lib32-libxfixes-6.0.1-2  lib32-libxinerama-1.1.6-1  lib32-libxml2-2.15.3-1
+              lib32-libxshmfence-1.3.3-1  lib32-libxss-1.2.5-1  lib32-libxxf86vm-1.1.5-2  lib32-llvm-libs-1:22.1.8-1
+              lib32-lm_sensors-1:3.6.2-2  lib32-mesa-1:26.1.5-1  lib32-ncurses-6.6-2  lib32-nettle-4.0-2  lib32-nspr-4.39-1
+              lib32-nss-3.126-1  lib32-openssl-1:3.6.3-1  lib32-p11-kit-0.26.4-1  lib32-pcre2-10.47-1  lib32-pipewire-1:1.6.8-1
+              lib32-spirv-tools-1:1.4.350.1-1  lib32-sqlite-3.53.4-1  lib32-systemd-261.2-1  lib32-util-linux-2.42.2-1
+              lib32-vulkan-icd-loader-1.4.350.1-1  lib32-vulkan-mesa-implicit-layers-1:26.1.5-1  lib32-vulkan-radeon-1:26.1.5-1
+              lib32-wayland-1.25.0-1  lib32-xcb-util-keysyms-0.4.1-2  lib32-xz-5.8.3-1  lib32-zlib-1.3.2-1  lib32-zstd-1.5.7-2
+              libadwaita-1:1.9.2-1  libblake3-1.8.4-1  libfyaml-0.9.6-2  libxcrypt-compat-4.5.2-1  libxmlb-0.3.29-1
+              lsb-release-2.0.r55.a25a4fc-1  lsof-4.99.7-1  onetbb-2023.1.0-1  steam-devices-1.0.0.87-1  usbutils-019-1
+              vulkan-mesa-implicit-layers-1:26.1.5-1  vulkan-radeon-1:26.1.5-1  xdg-user-dirs-0.20-1  xorg-xrandr-1.5.4-1
+              zenity-4.2.2-1  steam-1.0.0.87-1</code></pre></div><p>Got a freeze within the hour while watching a youtube video.</p><p>So if I try reinstalling steam and instead of selecting vulkan-radeon I select vulkan-nouveau, would that use the generic drivers instead ruling out amdgpu specific issues?</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305811" class="blockpost rowodd">
+	<h2><span><span class="conr">#15</span> <a href="viewtopic.php?pid=2305811#p2305811">2026-07-28 19:41:09</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>seth</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/63451.png?m=1751375556" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Won&#039;t reply 2 private help req</span></dd>
+						<dd><span>Registered: 2012-09-03</span></dd>
+						<dd><span>Posts: 77,379</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p>There&#039;s no nvidia card in the journal you posted, you can try using swrast or swiftshader, <a href="https://wiki.archlinux.org/title/Vulkan#Installation" rel="nofollow">https://wiki.archlinux.org/title/Vulkan#Installation</a><br />But<br />1. there&#039;re two AMD GPUs</p><div class="codebox"><pre><code>Jul 24 10:07:34 archlinux kernel: amdgpu 0000:75:00.0: [drm] Cannot find any crtc or sizes</code></pre></div><p>There&#039;re no output attached to the APU =&gt; just disable it? To check whether the issue is (if at all) coming from the RX 9060<br />2. &quot;The mouse stops responding, no caps lock, if audio is playing it just plays the last 2 seconds in a loop.&quot; - this kind of kernel halt rarely occurs for a graphics driver issue<br />3. &quot;installed steam and associated vulkan-radeon drivers, mesa etc. Literally within 5 minutes of getting that done&quot; just installing these things will not have had any impact unless you re/started a GUI session</p>
+					</div>
+					<div class="postsignature postmsg"><hr /><p><a href="http://wiki.archlinux.org/title/List_of_applications/Internet#Without_a_dedicated_client" rel="nofollow">How to upload text</a> · <a href="http://wiki.archlinux.org/title/Systemd#Change_default_target_to_boot_into" rel="nofollow">How to boot w/o GUI</a> · <a href="http://wiki.archlinux.org/title/Dual_boot_with_Windows#Fast_Startup_and_hibernation" rel="nofollow">Disable Windows Fast-Start!</a> · <a href="http://wiki.archlinux.org/title/Xinit#xinitrc" rel="nofollow">Fix your xinitrc</a></p></div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305823" class="blockpost roweven">
+	<h2><span><span class="conr">#16</span> <a href="viewtopic.php?pid=2305823#p2305823">2026-07-28 20:29:44</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>KaibutsuX</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2015-04-22</span></dd>
+						<dd><span>Posts: 38</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p>Hmm, well I tried the boot param to disable GFXOFF and that didn&#039;t do anything.</p><p>Also tried enabling kdumpst and simple-kdump. kdumpst didn&#039;t seem to do anything and the journal never showed it load. simple-kdump got setup, but when I tested the kernel panic, it literally just hung like it always does, didn&#039;t reboot and when I did reboot manually, there was no crash file. Seems like the wiki might need to be updated for that or I just didn&#039;t understand some assumptions.</p><p>I also followed through this other guy&#039;s thread: <a href="https://bbs.archlinux.org/viewtopic.php?id=304412&amp;p=3" rel="nofollow">https://bbs.archlinux.org/viewtopic.php?id=304412&amp;p=3</a> which looks eerily similar.</p><p>There&#039;s also this thread: <a href="https://bbs.archlinux.org/viewtopic.php?pid=2261920#p2261920" rel="nofollow">https://bbs.archlinux.org/viewtopic.php … 0#p2261920</a> which looks similar, but unless they just stuck the binary blob back in linux-firmware-amdgpu I doubt it regressed again.</p><p>I think I&#039;m just going to have to bite the bullet and reinstall and start logging every single pkg that gets installed, ideally 1 per day until I get a crash.</p><p>On the plus side, I&#039;ve gotten a lot more comfortable messing with grub entries and kernel parameters.</p><p>Oh yeah, the mobo has integrated graphics which I&#039;ve never used, I&#039;m not even sure if I can disable it, I&#039;ll check the bios at next reboot.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305830" class="blockpost rowodd">
+	<h2><span><span class="conr">#17</span> <a href="viewtopic.php?pid=2305830#p2305830">2026-07-28 21:16:03</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>seth</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/63451.png?m=1751375556" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Won&#039;t reply 2 private help req</span></dd>
+						<dd><span>Registered: 2012-09-03</span></dd>
+						<dd><span>Posts: 77,379</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p><a href="https://wiki.archlinux.org/title/Kdump#Manual_steps" rel="nofollow">https://wiki.archlinux.org/title/Kdump#Manual_steps</a> - you don&#039;t have to compile a kernel.</p>
+					</div>
+					<div class="postsignature postmsg"><hr /><p><a href="http://wiki.archlinux.org/title/List_of_applications/Internet#Without_a_dedicated_client" rel="nofollow">How to upload text</a> · <a href="http://wiki.archlinux.org/title/Systemd#Change_default_target_to_boot_into" rel="nofollow">How to boot w/o GUI</a> · <a href="http://wiki.archlinux.org/title/Dual_boot_with_Windows#Fast_Startup_and_hibernation" rel="nofollow">Disable Windows Fast-Start!</a> · <a href="http://wiki.archlinux.org/title/Xinit#xinitrc" rel="nofollow">Fix your xinitrc</a></p></div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305842" class="blockpost roweven">
+	<h2><span><span class="conr">#18</span> <a href="viewtopic.php?pid=2305842#p2305842">2026-07-29 00:44:22</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>KaibutsuX</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2015-04-22</span></dd>
+						<dd><span>Posts: 38</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p>I know, I&#039;m running linux-lts which it says is already configured for kdump. But following the text in the wiki for both simple-kdump nor kdumpst led to anything actually happening/being written at panic time.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305849" class="blockpost rowodd">
+	<h2><span><span class="conr">#19</span> <a href="viewtopic.php?pid=2305849#p2305849">2026-07-29 06:10:47</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>seth</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/63451.png?m=1751375556" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Won&#039;t reply 2 private help req</span></dd>
+						<dd><span>Registered: 2012-09-03</span></dd>
+						<dd><span>Posts: 77,379</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<div class="quotebox"><blockquote><div><p>written at panic time</p></div></blockquote></div><p>That is with a synthetically triggered kernel crash??<br /><a href="https://wiki.archlinux.org/title/Kdump#Testing_kdump_by_crashing_the_kernel" rel="nofollow">https://wiki.archlinux.org/title/Kdump# … the_kernel</a></p><p>What are the literal crashkernel and kexec parameters you used?<br />(There&#039;re a bunch of placeholders in the wiki examples)</p>
+					</div>
+					<div class="postsignature postmsg"><hr /><p><a href="http://wiki.archlinux.org/title/List_of_applications/Internet#Without_a_dedicated_client" rel="nofollow">How to upload text</a> · <a href="http://wiki.archlinux.org/title/Systemd#Change_default_target_to_boot_into" rel="nofollow">How to boot w/o GUI</a> · <a href="http://wiki.archlinux.org/title/Dual_boot_with_Windows#Fast_Startup_and_hibernation" rel="nofollow">Disable Windows Fast-Start!</a> · <a href="http://wiki.archlinux.org/title/Xinit#xinitrc" rel="nofollow">Fix your xinitrc</a></p></div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305879" class="blockpost roweven">
+	<h2><span><span class="conr">#20</span> <a href="viewtopic.php?pid=2305879#p2305879">2026-07-29 17:13:32</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>KaibutsuX</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2015-04-22</span></dd>
+						<dd><span>Posts: 38</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p>I followed both Automatic sections. For simple-kdump I set crashkernel=2G, rebuilt the grub cfg and rebooted into that crashkernel. Then I attempted the panic from:</p><p>&gt; Finally enable and start simple-kdump-setup.service, then refer to #Testing kdump by crashing the kernel to verify the kdump behavior. </p><p>It just froze like it always does, I had to manually reboot with power switch and the wiki says:</p><p>&gt; The kexec kernel should reach target Emergency Mode to collect vmcore, with a prompt asking login for the emergency shell. You can ignore that login as the vmcore collection will happen at the background and reboot automatically. </p><p>That didn&#039;t happen, it just booted normally and there was no file in /var/crash.</p><p>Anyway, I&#039;ve reinstalled the base Arch system again with limited pkgs just so I can work, Librewolf, remmina and pulseaudio. Freeze still happened while playing a youtube video. I then modified the boot parameters to loglevel=8 and currently waiting for a crash.</p><p><a href="https://paste.c-net.org/CraziesSessions" rel="nofollow">Currently installed packages from pacman -Q</a></p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305892" class="blockpost rowodd">
+	<h2><span><span class="conr">#21</span> <a href="viewtopic.php?pid=2305892#p2305892">2026-07-29 20:23:36</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>seth</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/63451.png?m=1751375556" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Won&#039;t reply 2 private help req</span></dd>
+						<dd><span>Registered: 2012-09-03</span></dd>
+						<dd><span>Posts: 77,379</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p>This has nothing to do with what packages are installed and probably also not w/ what processes are runnning</p><div class="quotebox"><cite>seth wrote:</cite><blockquote><div><p><a href="https://www.asus.com/de/motherboards-components/motherboards/prime/prime-x870-p-wifi/" rel="nofollow">https://www.asus.com/de/motherboards-co … 70-p-wifi/</a> makes it look like there&#039;re some elaborate settings and certainly PBO control?</p></div></blockquote></div><div class="quotebox"><blockquote><div><p>There&#039;s also <a href="https://archlinux.org/packages/extra/x86_64/corectrl/" rel="nofollow">https://archlinux.org/packages/extra/x86_64/corectrl/</a> (you *want* to use the UEFI settings if they&#039;re available)</p></div></blockquote></div><p>Ans at the very least try to limit the c-states to 1, <a href="https://wiki.archlinux.org/title/Ryzen#Troubleshooting" rel="nofollow">https://wiki.archlinux.org/title/Ryzen#Troubleshooting</a></p>
+					</div>
+					<div class="postsignature postmsg"><hr /><p><a href="http://wiki.archlinux.org/title/List_of_applications/Internet#Without_a_dedicated_client" rel="nofollow">How to upload text</a> · <a href="http://wiki.archlinux.org/title/Systemd#Change_default_target_to_boot_into" rel="nofollow">How to boot w/o GUI</a> · <a href="http://wiki.archlinux.org/title/Dual_boot_with_Windows#Fast_Startup_and_hibernation" rel="nofollow">Disable Windows Fast-Start!</a> · <a href="http://wiki.archlinux.org/title/Xinit#xinitrc" rel="nofollow">Fix your xinitrc</a></p></div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305893" class="blockpost roweven">
+	<h2><span><span class="conr">#22</span> <a href="viewtopic.php?pid=2305893#p2305893">2026-07-29 20:28:08</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>KaibutsuX</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2015-04-22</span></dd>
+						<dd><span>Posts: 38</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p>I found <a href="https://bbs.archlinux.org/viewtopic.php?pid=2143193#p2143193" rel="nofollow">this</a> thread which looks like he narrowed it down to CPB which I&#039;ve got currently disabled. If that still crashes, I&#039;ll disable PBO next. And then move on to c-state modifications.</p><p>I was really leaning towards a pkg issue, because I&#039;ve been running this desktop 100% stable for over a year until a pacman update with 0 changes to hardware or BIOS settings.</p>
+						<p class="postedit"><em>Last edited by KaibutsuX (2026-07-29 20:28:39)</em></p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305894" class="blockpost rowodd">
+	<h2><span><span class="conr">#23</span> <a href="viewtopic.php?pid=2305894#p2305894">2026-07-29 20:31:54</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>seth</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/63451.png?m=1751375556" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Won&#039;t reply 2 private help req</span></dd>
+						<dd><span>Registered: 2012-09-03</span></dd>
+						<dd><span>Posts: 77,379</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p><a href="https://wiki.archlinux.org/title/Arch_Linux_Archive#Restore_all_packages_to_a_specific_date" rel="nofollow">https://wiki.archlinux.org/title/Arch_L … cific_date</a><br />microcode or firmware files might have an impact but the ryzen problem is a degrading condition ie it will get worse over time.</p>
+					</div>
+					<div class="postsignature postmsg"><hr /><p><a href="http://wiki.archlinux.org/title/List_of_applications/Internet#Without_a_dedicated_client" rel="nofollow">How to upload text</a> · <a href="http://wiki.archlinux.org/title/Systemd#Change_default_target_to_boot_into" rel="nofollow">How to boot w/o GUI</a> · <a href="http://wiki.archlinux.org/title/Dual_boot_with_Windows#Fast_Startup_and_hibernation" rel="nofollow">Disable Windows Fast-Start!</a> · <a href="http://wiki.archlinux.org/title/Xinit#xinitrc" rel="nofollow">Fix your xinitrc</a></p></div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305895" class="blockpost roweven">
+	<h2><span><span class="conr">#24</span> <a href="viewtopic.php?pid=2305895#p2305895">2026-07-29 20:34:49</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>KaibutsuX</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2015-04-22</span></dd>
+						<dd><span>Posts: 38</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<p>Tried amd-ucode, but it appears the kernel already has the most up to date patch for my cpu without it installed.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2305897" class="blockpost rowodd">
+	<h2><span><span class="conr">#25</span> <a href="viewtopic.php?pid=2305897#p2305897">2026-07-29 20:41:14</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>KaibutsuX</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2015-04-22</span></dd>
+						<dd><span>Posts: 38</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Crash during pacman -Syu and now system freezes intermittently</h3>
+					<div class="postmsg">
+						<div class="quotebox"><cite>seth wrote:</cite><blockquote><div><p><a href="https://wiki.archlinux.org/title/Arch_Linux_Archive#Restore_all_packages_to_a_specific_date" rel="nofollow">https://wiki.archlinux.org/title/Arch_L … cific_date</a><br />microcode or firmware files might have an impact but the ryzen problem is a degrading condition ie it will get worse over time.</p></div></blockquote></div><p>Where are you getting that information that it degrades over time?</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="postlinksb">
+	<div class="inbox crumbsplus">
+		<div class="pagepost">
+			<p class="pagelink conl"><span class="pages-label">Pages: </span><strong class="item1">1</strong> <a href="viewtopic.php?id=314363&amp;p=2">2</a> <a rel="next" href="viewtopic.php?id=314363&amp;p=2">Next</a></p>
+		</div>
+		<ul class="crumbs">
+			<li><a href="index.php">Index</a></li>
+			<li><span>»&#160;</span><a href="viewforum.php?id=44">Pacman &amp; Package Upgrade Issues</a></li>
+			<li><span>»&#160;</span><strong><a href="viewtopic.php?id=314363">Crash during pacman -Syu and now system freezes intermittently</a></strong></li>
+		</ul>
+		<div class="clearer"></div>
+	</div>
+</div>
+</div>
+
+<div id="brdfooter" class="block">
+	<h2><span>Board footer</span></h2>
+	<div class="box">
+		<div id="brdfooternav" class="inbox">
+			<div class="conl">
+				<form id="qjump" method="get" action="viewforum.php">
+					<div><label><span>Jump to<br /></span>
+					<select name="id" onchange="window.location=('viewforum.php?id='+this.options[this.selectedIndex].value)">
+						<optgroup label="Technical Issues and Assistance">
+							<option value="23">Newbie Corner</option>
+							<option value="17">Installation</option>
+							<option value="22">Kernel &amp; Hardware</option>
+							<option value="18">Applications &amp; Desktop Environments</option>
+							<option value="31">Laptop Issues</option>
+							<option value="8">Networking, Server, and Protection</option>
+							<option value="32">Multimedia and Games</option>
+							<option value="51">Arch Linux Guided Installer</option>
+							<option value="50">System Administration</option>
+							<option value="35">Other Architectures</option>
+						</optgroup>
+						<optgroup label="Arch-centric">
+							<option value="24">Announcements, Package &amp; Security Advisories</option>
+							<option value="1">Arch Discussion</option>
+							<option value="13">Forum &amp; Wiki discussion</option>
+						</optgroup>
+						<optgroup label="Pacman Upgrades, Packaging &amp; AUR">
+							<option value="44" selected="selected">Pacman &amp; Package Upgrade Issues</option>
+							<option value="49">[testing] Repo Forum</option>
+							<option value="4">Creating &amp; Modifying Packages</option>
+							<option value="38">AUR Issues, Discussion &amp; PKGBUILD Requests</option>
+						</optgroup>
+						<optgroup label="Contributions &amp; Discussion">
+							<option value="20">GNU/Linux Discussion</option>
+							<option value="27">Community Contributions</option>
+							<option value="33">Programming &amp; Scripting</option>
+							<option value="30">Other Languages</option>
+							<option value="47">Artwork and Screenshots</option>
+						</optgroup>
+					</select></label>
+					<input type="submit" value=" Go " accesskey="g" />
+					</div>
+				</form>
+			</div>
+			<div class="conr">
+				<p id="feedlinks"><span class="atom"><a href="extern.php?action=feed&amp;tid=314363&amp;type=atom">Atom topic feed</a></span></p>
+				<p id="poweredby">Powered by <a href="http://fluxbb.org/">FluxBB</a></p>
+			</div>
+			<div class="clearer"></div>
+		</div>
+	</div>
+</div>
+
+
+
+</div>
+<div class="end-box"></div>
+</div>
+
+</body>
+</html>

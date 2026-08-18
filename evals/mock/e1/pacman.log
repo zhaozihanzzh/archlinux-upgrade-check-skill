@@ -1,0 +1,5 @@
+[2026-08-03T12:00:00+0800] [PACMAN] Running 'pacman -Syu'
+[2026-08-03T12:01:00+0800] [PACMAN] synchronizing package lists
+[2026-08-03T12:05:00+0800] [PACMAN] starting full system upgrade
+[2026-08-03T12:10:00+0800] [ALPM] upgraded shadow (4.14.3-1 -> 4.15.0-1)
+[2026-08-03T12:10:00+0800] [ALPM] upgraded glibc (2.39-1 -> 2.40-1)
