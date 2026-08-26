@@ -15,7 +15,7 @@ python3 tests/test_scraping.py
 python3 scripts/test_integration.py
 
 # Layer 4: 技能端到端评测（慢，需要 pi + API）
-python3 scripts/skill_eval.py --model opencode-go/deepseek-chat
+python3 scripts/skill_eval.py --model <your-model>
 ```
 
 ---
@@ -150,13 +150,19 @@ python3 scripts/test_integration.py --timeout 60
 
 ```bash
 # 全部评测
-python3 scripts/skill_eval.py --model opencode-go/deepseek-chat
+python3 scripts/skill_eval.py --model <your-model>
 
 # 指定测试
-python3 scripts/skill_eval.py --model opencode-go/deepseek-chat --evals 1,3
+python3 scripts/skill_eval.py --model <your-model> --evals 1,3
 
 # 输出到目录
-python3 scripts/skill_eval.py --model opencode-go/deepseek-chat --output-dir /tmp/results
+python3 scripts/skill_eval.py --model <your-model> --output-dir /tmp/results
+
+# 对比 with-skill vs no-skill baseline（推荐）
+python3 scripts/skill_eval.py --model <your-model> --baseline --output-dir /tmp/results
+
+# 每个 eval 重复 N 次抑制 LLM 方差
+python3 scripts/skill_eval.py --model <your-model> --repeat 3
 ```
 
 ### 输出结构
@@ -173,15 +179,16 @@ output-dir/
 |------|---------|
 | `exit_code` | pi -p 成功退出 |
 | `text_contains` | LLM 输出包含指定文本 |
+| `text_contains_any` | LLM 输出包含关键词列表中的任一个 |
 | `timeout` | 在指定时间内完成 |
 
 ### 测试用例
 
 | ID | 名称 | Prompt | Skill 断言 |
 |----|------|--------|-----------|
-| E1 | regular-upgrade | "我要跑 pacman -Syu 了，先帮我检查下 Arch 官网新闻和论坛…" | no-crash |
-| E2 | long-time-no-upgrade | "我有一台服务器一年半没更新了，之前都是直接 pacman -Syu 的…" | no-crash |
-| E3 | custom-days | "帮我检查一下最近 90 天 Arch 社区有没有提到 pipewire 升级…" | no-crash, uses-days-flag, mentions-pipewire |
+| E1 | regular-upgrade | "我要跑 pacman -Syu 了，先帮我检查下 Arch 官网新闻和论坛…" | no-crash, mentions-shadow-issue, mentions-sg-or-newgrp |
+| E2 | long-time-no-upgrade | "我有一台服务器一年半没更新了，之前都是直接 pacman -Syu 的…" | no-crash, recommends-archive, warns-against-direct-syu |
+| E3 | custom-days | "帮我检查一下最近 90 天 Arch 社区有没有提到 pipewire 升级…" | no-crash, mentions-glibc-crash, mentions-pipewire |
 
 ---
 
@@ -245,7 +252,7 @@ python3 tests/test_scraping.py && \
 python3 scripts/test_integration.py
 
 # Layer 4（需要 pi + API，~10min）
-python3 scripts/skill_eval.py --model opencode-go/deepseek-chat --output-dir /tmp/layer4
+python3 scripts/skill_eval.py --model <your-model> --output-dir /tmp/layer4
 ```
 
 ---

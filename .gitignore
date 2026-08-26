@@ -1,0 +1,9 @@
+# Python
+__pycache__/
+*.pyc
+
+# Local test/eval outputs (regenerated on demand, not committed)
+evals/output/
+
+# Local scratch
+/tmp/

@@ -10,7 +10,7 @@ uses predetermined mock data — it doesn't know it's being tested.
 
 Usage:
   # Run all evals
-  python3 scripts/skill_eval.py --model opencode-go/deepseek-chat
+  python3 scripts/skill_eval.py --model <your-model>
 
   # Specific evals
   python3 scripts/skill_eval.py --model ... --evals 1,3
@@ -61,6 +61,20 @@ def _check_text_contains(result, assertion):
         return True, f"'{expected}' found in {source}"
     else:
         return False, f"'{expected}' not found in {source}"
+
+
+@register_handler('text_contains_any')
+def _check_text_contains_any(result, assertion):
+    expected = assertion.get('expected', [])
+    source = assertion.get('source', 'stdout')
+    text = result.get(source, '')
+    if isinstance(expected, str):
+        expected = [expected]
+    matches = [kw for kw in expected if kw in text]
+    if matches:
+        return True, f"matched {matches} in {source}"
+    else:
+        return False, f"none of {expected} found in {source}"
 
 
 @register_handler('timeout')
@@ -115,9 +129,10 @@ def resolve_path(path):
 # pi -p --skill runner
 # ──────────────────────────────────────────────────────
 
-def run_pi(prompt, model, skill_path, mock_dir, timeout=300):
+def run_pi(prompt, model, skill_path, mock_dir, timeout=300, use_skill=True):
     cmd = [PI_CMD, '-p', '--model', model]
-    cmd += ['--skill', skill_path]
+    if use_skill and skill_path:
+        cmd += ['--skill', skill_path]
     cmd.append(prompt)
 
     env = os.environ.copy()
@@ -165,8 +180,12 @@ def run_pi(prompt, model, skill_path, mock_dir, timeout=300):
 # Grading
 # ──────────────────────────────────────────────────────
 
-def grade_eval(eval_def, model, skill_path, timeout=300):
-    """Run one eval through pi -p --skill and grade the LLM output."""
+def grade_eval(eval_def, model, skill_path, timeout=300, use_skill=True, repeat=1):
+    """Run one eval through pi -p (with or without skill) and grade the LLM output.
+
+    When repeat > 1, runs the same prompt that many times to dampen LLM output
+    variance and reports the mean pass rate and timing.
+    """
     eid = eval_def['id']
     name = eval_def['name']
     prompt = eval_def['prompt']
@@ -180,31 +199,48 @@ def grade_eval(eval_def, model, skill_path, timeout=300):
     elif mock_args.get('pacman_log'):
         mock_dir = os.path.dirname(resolve_path(mock_args['pacman_log']))
 
-    print(f"  E{eid}: {name}...", end=' ', flush=True)
-    result = run_pi(prompt, model, skill_path, mock_dir, timeout=timeout)
-    print(f"done ({result['elapsed']:.1f}s, exit={result['exit_code']})")
+    label = 'with_skill' if use_skill else 'baseline'
+    runs = []
+    for i in range(repeat):
+        tag = f"{label}#{i + 1}" if repeat > 1 else label
+        print(f"  E{eid}: {name} [{tag}]...", end=' ', flush=True)
+        result = run_pi(prompt, model, skill_path, mock_dir, timeout=timeout, use_skill=use_skill)
+        print(f"done ({result['elapsed']:.1f}s, exit={result['exit_code']})")
 
-    results = []
-    for assertion in assertions:
-        check = check_llm_assertion(assertion, result)
-        results.append(check)
+        checked = [check_llm_assertion(a, result) for a in assertions]
+        passed = sum(1 for r in checked if r['passed'])
+        total = len(checked)
+        runs.append({
+            'pass_rate': passed / total if total > 0 else 0,
+            'passed': passed,
+            'failed': total - passed,
+            'total': total,
+            'time_seconds': round(result['elapsed'], 1),
+            'expectations': checked,
+            'llm_output_preview': result['stdout'][:500] if result['stdout'] else '(empty)',
+        })
 
-    passed = sum(1 for r in results if r['passed'])
-    failed = sum(1 for r in results if not r['passed'])
-    total = len(results)
+    # Aggregate across repeats
+    import statistics
+    pass_rates = [r['pass_rate'] for r in runs]
+    times = [r['time_seconds'] for r in runs]
+    mean_pr = sum(pass_rates) / len(pass_rates) if pass_rates else 0
+    stdev_pr = statistics.stdev(pass_rates) if len(pass_rates) >= 2 else 0.0
 
     return {
         'eval_id': eid,
         'eval_name': name,
+        'configuration': label,
         'result': {
-            'pass_rate': passed / total if total > 0 else 0,
-            'passed': passed,
-            'failed': failed,
-            'total': total,
-            'time_seconds': round(result['elapsed'], 1),
+            'pass_rate': round(mean_pr, 2),
+            'pass_rate_stdev': round(stdev_pr, 2),
+            'passed': sum(r['passed'] for r in runs),
+            'failed': sum(r['failed'] for r in runs),
+            'total': runs[0]['total'] if runs else 0,
+            'time_seconds': round(sum(times) / len(times), 1) if times else 0,
+            'repeat': repeat,
         },
-        'expectations': results,
-        'llm_output_preview': result['stdout'][:500] if result['stdout'] else '(empty)',
+        'runs': runs,
     }
 
 
@@ -216,11 +252,15 @@ def main():
     parser = argparse.ArgumentParser(
         description='End-to-end skill evaluation for archlinux-upgrade-check-skill (Layer 4)')
     parser.add_argument('--model', type=str, required=True,
-                        help='Model to use (e.g., opencode-go/deepseek-chat)')
+                        help='Model to use (e.g., <your-model>)')
     parser.add_argument('--evals', type=str, default=None,
                         help='Comma-separated eval IDs to run (default: all)')
     parser.add_argument('--skill', type=str, default=None,
                         help='Path to skill file/directory (default: SKILL_DIR)')
+    parser.add_argument('--baseline', action='store_true',
+                        help='Also run each eval WITHOUT the skill (no --skill), so you can compare the skill\'s incremental value. The skill scripts remain on disk for the baseline to discover.')
+    parser.add_argument('--repeat', type=int, default=1,
+                        help='Run each eval N times to dampen LLM variance; report mean pass rate (default: 1)')
     parser.add_argument('--output-dir', type=str, default=None,
                         help='Output directory (default: stdout only)')
     parser.add_argument('--timeout', type=int, default=300,
@@ -230,10 +270,12 @@ def main():
     skill_path = args.skill or SKILL_DIR
 
     print(f"Arch Linux Upgrade Check — Skill Evaluation (Layer 4)")
-    print(f"{'=' * 50}")
-    print(f"Model:  {args.model}")
-    print(f"Skill:  {skill_path}")
-    print(f"Timeout: {args.timeout}s per eval")
+    print(f"{'=' * 60}")
+    print(f"Model:    {args.model}")
+    print(f"Skill:    {skill_path}")
+    print(f"Timeout:  {args.timeout}s per run")
+    print(f"Repeat:   {args.repeat}x")
+    print(f"Baseline: {'yes (with-skill vs no-skill)' if args.baseline else 'no (with-skill only)'}")
     print()
 
     evals = load_evals()
@@ -253,29 +295,38 @@ def main():
         print(f"  E{e['id']}: {e['name']} ({a_count} assertions)")
     print()
 
-    runs = []
-    total_passed = 0
-    total_failed = 0
-    total_assertions = 0
-
+    all_runs = []
     for eval_def in evals:
-        run = grade_eval(eval_def, args.model, skill_path, timeout=args.timeout)
-        runs.append(run)
-        total_passed += run['result']['passed']
-        total_failed += run['result']['failed']
-        total_assertions += run['result']['total']
+        all_runs.append(grade_eval(eval_def, args.model, skill_path,
+                                   timeout=args.timeout, use_skill=True, repeat=args.repeat))
+        if args.baseline:
+            all_runs.append(grade_eval(eval_def, args.model, skill_path,
+                                       timeout=args.timeout, use_skill=False, repeat=args.repeat))
+
+    # Summary per configuration
+    by_config = {}
+    for r in all_runs:
+        by_config.setdefault(r['configuration'], []).append(r)
 
     print()
-    print(f"{'=' * 50}")
-    print(f"Summary: {total_passed}/{total_assertions} passed, {total_failed} failed")
-    if total_assertions > 0:
-        print(f"Pass rate: {total_passed/total_assertions*100:.0f}%")
+    print(f"{'=' * 60}")
+    print("Summary by configuration:")
+    for cfg, rs in by_config.items():
+        tp = sum(r['result']['passed'] for r in rs)
+        tf = sum(r['result']['failed'] for r in rs)
+        tt = sum(r['result']['total'] for r in rs)
+        pr = tp / tt * 100 if tt else 0
+        print(f"  {cfg:12}: {tp}/{tt} passed ({pr:.0f}%)")
+    if args.baseline and 'with_skill' in by_config and 'baseline' in by_config:
+        ws = sum(r['result']['passed'] for r in by_config['with_skill'])
+        wt = sum(r['result']['total'] for r in by_config['with_skill'])
+        bs = sum(r['result']['passed'] for r in by_config['baseline'])
+        bt = sum(r['result']['total'] for r in by_config['baseline'])
+        delta = (ws / wt - bs / bt) * 100 if wt and bt else 0
+        print(f"  delta:     {delta:+.0f} percentage points (skill vs no-skill)")
     print()
 
     timestamp = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
-
-    passes = [r['result']['pass_rate'] for r in runs]
-    times = [r['result']['time_seconds'] for r in runs]
 
     def mean(vals):
         return sum(vals) / len(vals) if vals else 0
@@ -286,20 +337,23 @@ def main():
             'model': args.model,
             'timestamp': timestamp,
             'evals_run': [e['name'] for e in evals],
+            'repeat': args.repeat,
+            'baseline': args.baseline,
             'mock_data': True,
-            'note': 'Skill evaluation via pi -p --skill. Tests LLM + SKILL.md orchestration with mock data.',
+            'note': 'Skill evaluation via pi -p. with_skill uses --skill; baseline omits --skill (scripts still on disk).',
         },
-        'runs': runs,
-        'summary': {
-            'passed': total_passed,
-            'failed': total_failed,
-            'total': total_assertions,
-            'pass_rate': round(total_passed / total_assertions, 2) if total_assertions > 0 else 0,
-            'time_seconds': round(mean(times), 1),
-        },
+        'runs': all_runs,
+        'summary': {cfg: {
+            'passed': sum(r['result']['passed'] for r in rs),
+            'failed': sum(r['result']['failed'] for r in rs),
+            'total': sum(r['result']['total'] for r in rs),
+            'pass_rate': round(sum(r['result']['passed'] for r in rs) / sum(r['result']['total'] for r in rs), 2) if sum(r['result']['total'] for r in rs) else 0,
+            'time_seconds': round(mean([r['result']['time_seconds'] for r in rs]), 1),
+        } for cfg, rs in by_config.items()},
         'notes': [
             'Uses ARCH_CHECK_MOCK_DIR env var for deterministic mock data.',
-            'Tests that LLM + SKILL.md can correctly invoke the script and interpret results.',
+            'with_skill tests LLM + SKILL.md orchestration; baseline tests the same prompt without the skill loaded.',
+            'When repeat > 1, pass_rate is the mean across repeats; pass_rate_stdev shows variance.',
         ],
     }
 
@@ -313,20 +367,23 @@ def main():
         md_path = os.path.join(args.output_dir, 'benchmark.md')
         with open(md_path, 'w') as f:
             f.write("# Skill Evaluation Results (Layer 4)\n\n")
-            f.write(f"Model: {args.model}  |  Run at: {timestamp}\n\n")
-            f.write("| Eval | Passed | Failed | Total | Rate | Time |\n")
-            f.write("|------|--------|--------|-------|------|------|\n")
-            for r in runs:
+            f.write(f"Model: {args.model}  |  Run at: {timestamp}  |  Repeat: {args.repeat}x\n\n")
+            f.write("| Eval | Configuration | Passed | Failed | Total | Rate | Time |\n")
+            f.write("|------|---------------|--------|--------|-------|------|------|\n")
+            for r in all_runs:
                 res = r['result']
-                f.write(f"| E{r['eval_id']} {r['eval_name']} | {res['passed']} | {res['failed']} | {res['total']} | {res['pass_rate']*100:.0f}% | {res['time_seconds']}s |\n")
-            f.write(f"\n**Total**: {total_passed}/{total_assertions} ({total_passed/total_assertions*100:.0f}%)\n\n")
-            f.write("### Output Preview\n\n")
-            for r in runs:
-                f.write(f"**E{r['eval_id']} {r['eval_name']}**\n\n```\n{r.get('llm_output_preview', '(empty)')}\n```\n\n")
+                stdev = f" ±{res.get('pass_rate_stdev', 0)*100:.0f}%" if args.repeat > 1 else ""
+                f.write(f"| E{r['eval_id']} {r['eval_name']} | {r['configuration']} | {res['passed']} | {res['failed']} | {res['total']} | {res['pass_rate']*100:.0f}%{stdev} | {res['time_seconds']}s |\n")
+            f.write("\n### Output Previews\n\n")
+            for r in all_runs:
+                preview = r['runs'][0].get('llm_output_preview', '(empty)') if r.get('runs') else r.get('llm_output_preview', '(empty)')
+                header = "**E{} {} [{}]**".format(r['eval_id'], r['eval_name'], r['configuration'])
+                f.write(header + chr(10) + chr(10) + "```" + chr(10) + preview + chr(10) + "```" + chr(10) + chr(10))
         print(f"Summary written to: {md_path}")
     else:
         print(json.dumps(benchmark, indent=2, ensure_ascii=False))
 
+    total_failed = sum(r['result']['failed'] for r in all_runs)
     sys.exit(1 if total_failed > 0 else 0)
 
 

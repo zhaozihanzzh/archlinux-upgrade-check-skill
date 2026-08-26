@@ -60,6 +60,24 @@ EXCLUDE_NEWS_TITLES = [
 ]
 
 
+def _is_archlinux():
+    """Return True if the host appears to be Arch Linux.
+
+    Used to short-circuit the skill on non-Arch systems, where /var/log/pacman.log
+    and checkupdates don't exist and running an upgrade check is meaningless.
+    """
+    if os.path.exists("/etc/arch-release"):
+        return True
+    try:
+        with open("/etc/os-release") as f:
+            for line in f:
+                if line.strip() == "ID=arch":
+                    return True
+    except OSError:
+        pass
+    return False
+
+
 # ──────────── Step 1: Last Upgrade Date ────────────
 
 def get_last_upgrade_date(pacman_log=None):
@@ -93,7 +111,14 @@ def get_last_upgrade_date(pacman_log=None):
 # ──────────── Step 2: Checkupdates ────────────
 
 def get_checkupdates(mock_checkupdates=None):
-    """Run checkupdates and return a set of package names (lowercase)."""
+    """Run checkupdates and return a set of package names (lowercase).
+
+    Returns None when checkupdates can't be run successfully (not installed,
+    timed out, non-zero exit for any reason). An empty set is returned only for
+    a genuine "no updates available" result so that a failure is never mistaken
+    for "system is up to date" — that mislabeling is dangerous for a pre-upgrade
+    safety check.
+    """
     if mock_checkupdates:
         with open(mock_checkupdates) as f:
             packages = set()
@@ -113,16 +138,23 @@ def get_checkupdates(mock_checkupdates=None):
             timeout=60,
         )
     except FileNotFoundError:
-        print("  WARNING: checkupdates not found. Install pacman-contrib.", file=sys.stderr)
-        return set()
+        print("  ERROR: checkupdates not found. Install pacman-contrib.", file=sys.stderr)
+        return None
     except subprocess.TimeoutExpired:
-        print("  WARNING: checkupdates timed out", file=sys.stderr)
-        return set()
+        print("  ERROR: checkupdates timed out.", file=sys.stderr)
+        return None
 
-    if result.returncode != 0:
-        if result.returncode == 1 and "::" not in result.stderr:
-            return set()
+    # checkupdates exit codes: 0 = updates available (listed on stdout),
+    # 2 = no updates available (recent pacman-contrib). Anything else is a
+    # real failure (mirror error, interrupted, etc.) and must NOT be reported
+    # as "up to date".
+    if result.returncode == 2:
         return set()
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "").strip().splitlines()
+        detail = detail[-1] if detail else "unknown error"
+        print(f"  ERROR: checkupdates failed (exit {result.returncode}): {detail}", file=sys.stderr)
+        return None
 
     packages = set()
     for line in result.stdout.strip().split("\n"):
@@ -321,7 +353,9 @@ def fetch_news(since_date):
                 pass
 
         oldest_date = datetime.strptime(page_oldest, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-        if oldest_date < since_date and not has_more:
+        # Once the oldest item on this page is older than since_date, the next
+        # page can only be older still — stop early instead of paging to the end.
+        if oldest_date < since_date:
             break
         if not has_more:
             break
@@ -383,6 +417,15 @@ def fetch_bbs_page(page_num):
 
         date_str = date_obj.strftime("%Y-%m-%d")
 
+        # Reply count lives in the <td class="tc2"> cell (2nd data column on the
+        # BBS forum listing). Use a class-scoped match instead of a bare
+        # `<td>(\d+)</td>` regex, which never matches because every cell carries
+        # a class attribute (tcl/tc2/tc3/tcr) — that left replies stuck at 0.
+        replies = 0
+        replies_match = re.search(r'<td class="tc2">\s*(\d+)\s*</td>', row)
+        if replies_match:
+            replies = int(replies_match.group(1))
+
         if not is_sticky:
             topics.append({
                 "date": date_str,
@@ -392,7 +435,7 @@ def fetch_bbs_page(page_num):
                 "id": topic_id,
                 "is_solved": is_solved,
                 "is_closed": is_closed,
-                "replies": int(re.search(r"<td>(\d+)</td>", row).group(1)) if re.search(r"<td>(\d+)</td>", row) else 0,
+                "replies": replies,
             })
 
     has_more = bool(
@@ -713,7 +756,7 @@ def main():
     parser.add_argument("--report-file", type=str, default=None,
                         help="Write JSON report to file")
     parser.add_argument("--minimal", action="store_true",
-                        help="Minimal output: omit full package list, shorter content fields (reduces context usage)")
+                        help="Minimal output: omit the full package list and shorten content fields (reduces context usage; pairs well with --report-file)")
     parser.add_argument("--mock-pacman-log", type=str, default=None,
                         help="Path to mock pacman.log for testing/reproducibility")
     parser.add_argument("--mock-checkupdates", type=str, default=None,
@@ -721,6 +764,21 @@ def main():
     parser.add_argument("--mock-http-dir", type=str, default=None,
                         help="Directory with mock HTTP responses (URL→md5(URL)+.html) for testing/reproducibility")
     args = parser.parse_args()
+
+    # Only enforce the Arch-only guard on real systems; any mock input means
+    # we're in a test/eval harness that doesn't have /etc/arch-release.
+    in_mock_mode = bool(args.mock_pacman_log or args.mock_checkupdates
+                        or args.mock_http_dir or os.environ.get('ARCH_CHECK_MOCK_DIR'))
+    if not in_mock_mode and not _is_archlinux():
+        print("ERROR: this skill only applies to Arch Linux.", file=sys.stderr)
+        print("Refusing to run a pre-upgrade check on a non-Arch system.", file=sys.stderr)
+        result = {
+            "status": "error",
+            "message": "Not an Arch Linux system; this upgrade check does not apply.",
+            "matches": [],
+        }
+        _emit_output(result, args)
+        sys.exit(1)
 
     # Auto-detect mock data from environment variables (for skill_eval.py integration)
     # When ARCH_CHECK_MOCK_DIR is set, look for pacman.log and checkupdates.txt inside it
@@ -785,6 +843,19 @@ def main():
     # ── Step 2: Get checkupdates ──
     print("▸ Step 2/4: Checking packages to update...", file=sys.stderr)
     packages = get_checkupdates(mock_checkupdates=args.mock_checkupdates)
+    if packages is None:
+        # checkupdates failed — do NOT pretend the system is up to date.
+        print(file=sys.stderr)
+        print("Cannot determine pending updates — aborting upgrade check.", file=sys.stderr)
+        print("Fix checkupdates (install pacman-contrib, check your mirror) and rerun.", file=sys.stderr)
+        result = {
+            "status": "error",
+            "message": "checkupdates failed to run. Cannot determine pending updates; do not assume the system is up to date.",
+            "since_date": since_date.strftime("%Y-%m-%d"),
+            "matches": [],
+        }
+        _emit_output(result, args)
+        sys.exit(1)
     if packages:
         pkg_list = sorted(packages)
         print(f"  {len(packages)} packages to update", file=sys.stderr)
@@ -847,16 +918,28 @@ def main():
 
 
 def _emit_output(result, args):
-    """Output the result in requested format."""
-    if args.json:
-        print(json.dumps(result, indent=2, ensure_ascii=False))
-        return
+    """Output the result in requested format.
 
+    Two output modes, mutually exclusive in practice:
+      --report-file PATH : write JSON to a file only (recommended — keeps the
+                            often-large report out of the agent's conversation
+                            context); a one-line confirmation goes to stderr
+                            (which does not enter the context)
+      --json              : print JSON to stdout (for pipes / human inspection)
+    Giving both is allowed and writes the file first; JSON still goes to stdout
+    only if --json was explicitly requested.
+    """
     if args.report_file:
         with open(args.report_file, "w") as f:
             json.dump(result, f, indent=2, ensure_ascii=False)
         print(f"  Report written to {args.report_file}", file=sys.stderr)
         print(file=sys.stderr)
+        if not args.json:
+            return
+
+    if args.json:
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        return
 
     # Human-readable output
     if result.get("lookback_capped"):

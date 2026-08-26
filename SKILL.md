@@ -6,24 +6,28 @@ The user wants to perform a full system upgrade on ArchLinux. You need to check 
 
 ## Step 1: Gather upgrade information
 
-Parse `/var/log/pacman.log` to find the most recent `pacman -Syu` run (for time window) and run `checkupdates` to list packages to update.
+The check script does this for you — it parses `/var/log/pacman.log` to find the most recent `pacman -Syu` run (the scan time window) and runs `checkupdates` to list packages pending upgrade. You don't need to run those yourself; just invoke the script in Step 2.
 
-If the system is not ArchLinux, stop and tell the user.
+If the host is not Arch Linux, the script detects this, prints a clear error to stderr, and exits with a non-zero status **without producing a report**. If that happens, **stop** — do not attempt any further check, do not fabricate a report, and do not run `pacman -Syu`. Just tell the user this machine is not Arch Linux so the upgrade check doesn't apply. (In mock/test mode the Arch guard is skipped, so a missing `/etc/arch-release` on its own is not proof.)
 
 ## Step 2: Run the check script
 
 ```bash
-cd /path/to/skill
-python3 scripts/arch_upgrade_check.py --json --report-file /tmp/arch-upgrade-check.json
+python3 <skill-dir>/scripts/arch_upgrade_check.py --report-file /tmp/arch-upgrade-check.json
 ```
 
-This script scrapes Arch Linux News and BBS (Pacman & Package Upgrade Issues forum), cross-references against your package update list, and outputs a structured JSON report.
+`<skill-dir>` is this skill's directory in your environment (the directory containing this `SKILL.md`).
+
+This script scrapes Arch Linux News and BBS (Pacman & Package Upgrade Issues forum), cross-references against your package update list, and writes a structured JSON report to the file you name with `--report-file`. Writing to a file keeps the often-large report (notably the full `packages_to_update` list and forum-post text) out of your conversation context — you only pull in what you need when verifying matches in Step 3.
 
 Script output reference:
 
-| `--json` | Print machine-readable JSON to stdout |
-| `--report-file <path>` | Write JSON to a file instead of stdout (recommended to reduce context) |
+| `--report-file <path>` | Write JSON to a file only; a one-line confirmation goes to stderr. Recommended — keeps large output out of context |
+| `--json` | Print machine-readable JSON to stdout instead (for pipes / inspection). Mutually exclusive in practice with `--report-file` |
 | `--days <N>` | Override the time window (default: from last upgrade date) |
+| `--minimal` | Omit the full `packages_to_update` list and truncate each match's `first_post`/`recent_posts` to 300/1000 chars. Optional, for when context is tight — see note below |
+
+**About `--minimal`**: it trades verification quality for a smaller report. The full `packages_to_update` list is not needed for verifying matches (Step 3 uses per-match `package_evidence` instead), so dropping it costs nothing. But truncating `first_post` and `recent_posts` can cut the very context you need to judge whether a package mention is a real intervention issue or a false positive — in real threads these fields can run thousands of characters. Prefer running **without** `--minimal`; reach for it only when the update set is unusually large and context is genuinely constrained, and read the fuller report file directly when a match is borderline.
 
 ## Step 3: Verify the candidate matches
 
@@ -107,14 +111,13 @@ The RSS feeds have limited coverage (~9 months for news, ~25 days for BBS), so t
 
 ```
 archlinux-upgrade-check-skill/
-├── SKILL.md
-├── scripts/
-│   ├── arch_upgrade_check.py
-│   ├── test_integration.py    ← Script-level integration tests (Layer 3)
-│   └── skill_eval.py          ← Pi skill evaluation via pi -p --skill (Layer 4)
-├── tests/                     ← Unit tests (Layer 1-2)
-└── evals/                     ← Test definitions & mock data
+├── SKILL.md                  # this file (instructions the LLM follows)
+└── scripts/
+    └── arch_upgrade_check.py # the checker script (the workhorse)
 ```
+
+Test scaffolding (not part of the upgrade-check workflow) lives under
+`tests/`, `evals/`, and the other `scripts/*.py` files — see the repo README.
 
 ### JSON report structure
 
@@ -152,4 +155,4 @@ Key fields for verification:
 Top-level fields:
 - `lookback_capped`: true if the user's last upgrade was over 365 days ago; the scan window was capped and the user should use archive step-wise upgrades instead of direct `pacman -Syu`.
 
-Full output includes `packages_to_update` (the complete update list) — this can be large. Use `--report-file` to avoid dumping it into conversation context.
+Full output includes `packages_to_update` (the complete update list) and the full `first_post`/`recent_posts` text for each match. This can be large, which is why `--report-file` (writing to a file, not stdout) is the recommended invocation — the file keeps it out of context while preserving the full text you need for verification. Use `--minimal` only when context is genuinely tight (see Step 2).

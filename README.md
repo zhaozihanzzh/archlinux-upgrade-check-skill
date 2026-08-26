@@ -59,7 +59,7 @@ offline:
 ```bash
 cd archlinux-upgrade-check-skill
 export PI_OFFLINE=1 ARCH_CHECK_MOCK_DIR="$PWD/evals/mock/e1"
-pi -p --skill "$PWD" --model opencode-go/deepseek-chat \
+pi -p --skill "$PWD" --model <your-model> \
   "I'm about to run pacman -Syu on my Arch machine. Before that, please
    check Arch Linux official news and the BBS Pacman & Package Upgrade
    Issues forum for anything that might need manual intervention. I last
@@ -143,11 +143,17 @@ Safe to proceed with `pacman -Syu`, but be aware `sg` will be gone after the
 You can also run the checker outside of an LLM session:
 
 ```bash
-# print JSON to stdout
+# print JSON to stdout (for pipes / inspection)
 python3 scripts/arch_upgrade_check.py --json
 
-# write JSON to a file (recommended — the package list can be large)
-python3 scripts/arch_upgrade_check.py --json --report-file /tmp/report.json
+# write JSON to a file only — stdout stays quiet; a one-line confirmation
+# goes to stderr. Recommended when the full package list is large.
+python3 scripts/arch_upgrade_check.py --report-file /tmp/report.json
+
+# --minimal drops the full packages_to_update list and truncates each match's
+# first_post/recent_posts (300/1000 chars) — smaller report, but it can cut the
+# context needed to judge false positives. Use only when the update set is large.
+python3 scripts/arch_upgrade_check.py --report-file /tmp/report.json --minimal
 
 # scan a custom window instead of "since last upgrade"
 python3 scripts/arch_upgrade_check.py --days 90 --json
@@ -171,7 +177,10 @@ python3 tests/test_scraping.py
 python3 scripts/test_integration.py
 
 # Layer 4: end-to-end skill eval via `pi -p --skill` (needs pi + API key)
-python3 scripts/skill_eval.py --model opencode-go/deepseek-chat
+# Replace <your-model> with a model id your local `pi` can serve
+# (e.g. a provider/model you have configured). The skill itself is
+# model-agnostic — it only needs a model that can read SKILL.md and run scripts.
+python3 scripts/skill_eval.py --model <your-model>
 ```
 
 See [`docs/testing-guide.md`](docs/testing-guide.md) and

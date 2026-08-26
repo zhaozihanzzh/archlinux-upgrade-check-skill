@@ -255,6 +255,9 @@ def test_bbs_page_1_parsing():
         test("bbs_page_1: replies is a number",
              isinstance(t.get("replies"), int),
              f"replies={t.get('replies')}")
+        test("bbs_page_1: replies > 0 for at least one clean topic",
+             any(tt.get("replies", 0) > 0 for tt in clean),
+             f"all replies=0? {[tt.get('replies') for tt in clean[:5]]}")
 
 
 def test_bbs_page_24_parsing():

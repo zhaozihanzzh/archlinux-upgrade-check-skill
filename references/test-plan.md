@@ -196,16 +196,22 @@ These check the LLM's conversational output, not the script's JSON:
 
 ```bash
 # All evals
-python3 scripts/skill_eval.py --model opencode-go/deepseek-chat
+python3 scripts/skill_eval.py --model <your-model>
 
 # Specific evals
-python3 scripts/skill_eval.py --model ... --evals 1,3
+python3 scripts/skill_eval.py --model <your-model> --evals 1,3
 
 # Output to directory
-python3 scripts/skill_eval.py --model ... --output-dir /tmp/skill-eval
+python3 scripts/skill_eval.py --model <your-model> --output-dir /tmp/skill-eval
 
 # Custom timeout (default: 300s)
-python3 scripts/skill_eval.py --model ... --timeout 200
+python3 scripts/skill_eval.py --model <your-model> --timeout 200
+
+# Compare with-skill vs no-skill baseline (recommended)
+python3 scripts/skill_eval.py --model <your-model> --baseline --output-dir /tmp/skill-eval
+
+# Repeat each eval N times to dampen LLM variance
+python3 scripts/skill_eval.py --model <your-model> --repeat 3
 ```
 
 ### Output structure

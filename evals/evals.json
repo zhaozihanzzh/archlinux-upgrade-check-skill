@@ -11,7 +11,9 @@
         {"name": "has-required-fields", "description": "JSON report contains status, since_date, matches fields", "type": "json_fields", "fields": ["status", "since_date", "matches"]}
       ],
       "skill_assertions": [
-        {"name": "no-crash", "description": "pi subagent exits successfully", "type": "exit_code"}
+        {"name": "no-crash", "description": "pi subagent exits successfully", "type": "exit_code"},
+        {"name": "mentions-shadow-issue", "description": "LLM reports the shadow/sg issue found in the script output (proves it actually read the report, not just restated the prompt)", "type": "text_contains", "source": "stdout", "expected": "shadow"},
+        {"name": "mentions-sg-or-newgrp", "description": "LLM surfaces the actionable detail (sg command / newgrp) from the shadow topic", "type": "text_contains_any", "source": "stdout", "expected": ["sg", "newgrp"]}
       ],
       "mock_args": {
         "pacman_log": "evals/mock/e1/pacman.log",
@@ -29,7 +31,9 @@
         {"name": "archive-warning", "description": "Output mentions archive.archlinux.org recommendation", "type": "text_contains", "source": "stderr", "expected": "archive.archlinux.org"}
       ],
       "skill_assertions": [
-        {"name": "no-crash", "description": "pi subagent exits successfully", "type": "exit_code"}
+        {"name": "no-crash", "description": "pi subagent exits successfully", "type": "exit_code"},
+        {"name": "recommends-archive", "description": "LLM detects lookback_capped and recommends archive.archlinux.org step-wise upgrade (not direct pacman -Syu)", "type": "text_contains", "source": "stdout", "expected": "archive.archlinux.org"},
+        {"name": "warns-against-direct-syu", "description": "LLM warns the user NOT to run pacman -Syu directly on a system this far behind", "type": "text_contains_any", "source": "stdout", "expected": ["step", "分步", "逐步", "增量", "不要直接", "不建议直接"]}
       ],
       "mock_args": {
         "pacman_log": "evals/mock/e2/pacman.log",
@@ -50,8 +54,8 @@
       ],
       "skill_assertions": [
         {"name": "no-crash", "description": "pi subagent exits successfully", "type": "exit_code"},
-        {"name": "uses-days-flag", "description": "LLM correctly uses --days 90 to limit the scan window", "type": "text_contains", "source": "stdout", "expected": "90"},
-        {"name": "mentions-pipewire", "description": "LLM reports pipewire-related findings", "type": "text_contains", "source": "stdout", "expected": "pipewire"}
+        {"name": "mentions-glibc-crash", "description": "LLM reports the glibc/pacman-crash topic the script found (proves it ran the script with the 90-day window rather than just restating 'pipewire' from the prompt)", "type": "text_contains_any", "source": "stdout", "expected": ["glibc", "system freezes", "freeze", "崩溃", "死机"]},
+        {"name": "mentions-pipewire", "description": "LLM connects the finding to the user's pipewire concern", "type": "text_contains", "source": "stdout", "expected": "pipewire"}
       ],
       "mock_args": {
         "checkupdates": "evals/mock/e3/checkupdates.txt",

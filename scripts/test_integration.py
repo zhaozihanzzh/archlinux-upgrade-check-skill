@@ -31,6 +31,7 @@ import json
 import subprocess
 import time
 import argparse
+from datetime import datetime, timezone
 
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT_PATH = os.path.join(SKILL_DIR, 'scripts', 'arch_upgrade_check.py')
@@ -328,5 +329,4 @@ def main():
 
 
 if __name__ == '__main__':
-    from datetime import datetime, timezone
     main()
