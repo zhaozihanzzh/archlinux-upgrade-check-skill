@@ -4,6 +4,8 @@ description: Checks Arch Linux News and BBS (Pacman & Package Upgrade Issues) fo
 
 The user wants to perform a full system upgrade on ArchLinux. You need to check the Arch Linux news and forums to determine whether the update requires manual intervention, then present relevant findings.
 
+**Do not try to read the news or forum yourself.** A script in this skill (`scripts/arch_upgrade_check.py`) already does the fetching, parsing, and cross-referencing against the user's pending packages — running it is both faster and more accurate than you browsing pages. Your job is to run the script (Step 2) and verify its candidate matches (Step 3). Start by running the script.
+
 ## Step 1: Gather upgrade information
 
 The check script does this for you — it parses `/var/log/pacman.log` to find the most recent `pacman -Syu` run (the scan time window) and runs `checkupdates` to list packages pending upgrade. You don't need to run those yourself; just invoke the script in Step 2.
@@ -12,39 +14,51 @@ If the host is not Arch Linux, the script detects this, prints a clear error to 
 
 ## Step 2: Run the check script
 
+Run this first, before reporting anything. It is the source of truth for which packages and topics to report — do not substitute your own web browsing.
+
 ```bash
-python3 <skill-dir>/scripts/arch_upgrade_check.py --report-file /tmp/arch-upgrade-check.json
+python3 <skill-dir>/scripts/arch_upgrade_check.py --report-dir /tmp/arch-upgrade-check
 ```
 
 `<skill-dir>` is this skill's directory in your environment (the directory containing this `SKILL.md`).
 
-This script scrapes Arch Linux News and BBS (Pacman & Package Upgrade Issues forum), cross-references against your package update list, and writes a structured JSON report to the file you name with `--report-file`. Writing to a file keeps the often-large report (notably the full `packages_to_update` list and forum-post text) out of your conversation context — you only pull in what you need when verifying matches in Step 3.
+This script scrapes Arch Linux News and BBS (Pacman & Package Upgrade Issues forum), cross-references against your package update list, and writes a **sharded report** to the directory you name with `--report-dir`:
+
+- `report.json` — a slim summary (`status`, `since_date`, `lookback_capped`, `packages_count`, and per-match pointers: title/link/matched_packages/`is_necrobump`/`match_file`). It deliberately omits the full `packages_to_update` list (verification doesn't need it) and the forum-post text.
+- `match_<k>.json` — one file per candidate match, holding that match's **full** `package_evidence`, `first_post`, and `recent_posts` (untruncated).
+
+This split keeps your main conversation context small: you read only the slim `report.json`, and the heavy post text is loaded only by the subagent that verifies a given match (Step 3). The report does not list every pending package — if you need that list, run `checkupdates` directly.
 
 Script output reference:
 
-| `--report-file <path>` | Write JSON to a file only; a one-line confirmation goes to stderr. Recommended — keeps large output out of context |
-| `--json` | Print machine-readable JSON to stdout instead (for pipes / inspection). Mutually exclusive in practice with `--report-file` |
+| `--report-dir <dir>` | Write slim `report.json` + per-match files (recommended). Keeps context small; full text loaded only on demand |
+| `--report-file <path>` | Write the full report (all matches with post text) to a single file. Use for pipes / humans / when no subagent is available |
+| `--json` | Print the full JSON to stdout |
 | `--days <N>` | Override the time window (default: from last upgrade date) |
-| `--minimal` | Omit the full `packages_to_update` list and truncate each match's `first_post`/`recent_posts` to 300/1000 chars. Optional, for when context is tight — see note below |
-
-**About `--minimal`**: it trades verification quality for a smaller report. The full `packages_to_update` list is not needed for verifying matches (Step 3 uses per-match `package_evidence` instead), so dropping it costs nothing. But truncating `first_post` and `recent_posts` can cut the very context you need to judge whether a package mention is a real intervention issue or a false positive — in real threads these fields can run thousands of characters. Prefer running **without** `--minimal`; reach for it only when the update set is unusually large and context is genuinely constrained, and read the fuller report file directly when a match is borderline.
 
 ## Step 3: Verify the candidate matches
 
-The JSON report contains candidate matches — topics whose title or content mention a package name from your update list. Each match includes `package_evidence`: per-package data showing where each package name was found and in what context.
+The slim `report.json` lists candidate matches — topics whose title or content mention a package from your update list. Each match points to a `match_<k>.json` file with the full evidence.
 
 **You need to filter out false positives**: a topic may mention a package incidentally (in a URL, filename, or as a generic term) without being about an upgrade issue affecting that package.
 
 ### How you perform this verification
 
-Different agent harnesses have different capabilities (sub-agents, context management, etc.). Choose the approach that works best for your environment:
+**Preferred — per-match subagent.** For each match, spawn a `worker` subagent (isolated context) with the verification rules below and a pointer to `match_<k>.json`. The worker reads the full post text in its own context and returns a one-line verdict per package:
 
-- **Inline**: Read the report and examine each match's evidence directly
-- **Sub-agent**: Delegate verification to a focused sub-agent if available
-- **File-based**: Read the report file, write a summary, then discard the raw report from context
-- **Other**: Any approach that correctly applies the verification rules below
+```
+<package>: RELEVANT | <reason>
+<package>: NOT_RELEVANT | <reason>
+<package>: UNCERTAIN | <reason>
+```
 
-The important thing is to avoid retaining large intermediate data (full package list, raw report JSON) in your conversation context longer than needed.
+This keeps the heavy post text out of your main context entirely; you only collect the verdict lines. If your harness can run subagents in parallel, dispatch all matches' workers at once.
+
+A worker task looks like:
+
+> Read `<dir>/match_<k>.json`. For each package in `matched_packages`, judge RELEVANT / NOT_RELEVANT / UNCERTAIN using the rules below. Reply with exactly one line per package: `<pkg>: <VERDICT> | <reason>`.
+
+**Fallback — inline (no subagent available):** `read` each `match_<k>.json` one at a time, apply the rules, record the verdict, then move on — do not retain the raw post text in your reply.
 
 ### Verification rules
 
@@ -142,8 +156,8 @@ Key fields for verification:
            "match_type": "base"}
         ]
       },
-      "first_post": "...",        // first post content (up to 1000 chars)
-      "recent_posts": "...",      // recent replies content (up to 3000 chars)
+      "first_post": "...",        // full first post content (untruncated; in match_<k>.json)
+      "recent_posts": "...",      // full recent replies content (untruncated; in match_<k>.json)
       "is_necrobump": false,      // true if topic predates since_date
       "recent_post_count": 2,     // number of recent posts fetched
       "total_pages": 1
@@ -155,4 +169,4 @@ Key fields for verification:
 Top-level fields:
 - `lookback_capped`: true if the user's last upgrade was over 365 days ago; the scan window was capped and the user should use archive step-wise upgrades instead of direct `pacman -Syu`.
 
-Full output includes `packages_to_update` (the complete update list) and the full `first_post`/`recent_posts` text for each match. This can be large, which is why `--report-file` (writing to a file, not stdout) is the recommended invocation — the file keeps it out of context while preserving the full text you need for verification. Use `--minimal` only when context is genuinely tight (see Step 2).
+Each match's full `package_evidence`, `first_post`, and `recent_posts` live in its own `match_<k>.json` (untruncated); the slim `report.json` only carries pointers (`match_file` names). This split is why the heavy text stays out of your context — a subagent loads only the match file it verifies. With `--report-file` (single-file mode) the same content is one file instead.

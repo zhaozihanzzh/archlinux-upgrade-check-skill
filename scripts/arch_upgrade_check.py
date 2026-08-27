@@ -564,7 +564,8 @@ def fetch_bbs_topic(topic_id, since_date):
             html = resp.read().decode("utf-8", errors="replace")
     except Exception as e:
         print(f"    ⚠ Failed to fetch topic {topic_id}: {e}", file=sys.stderr)
-        return "", None, 1, 0, False, False
+        # Signature: (first_post, recent_posts, first_post_date, total_pages, recent_count, is_necrobump)
+        return "", "", None, 1, 0, False
 
     first_post_content, recent_posts_content, first_post_date, total_pages, recent_count, is_necrobump = \
         parse_bbs_topic_page(html, since_date)
@@ -754,9 +755,9 @@ def main():
     parser.add_argument("--json", action="store_true",
                         help="Output JSON report to stdout (for programmatic use)")
     parser.add_argument("--report-file", type=str, default=None,
-                        help="Write JSON report to file")
-    parser.add_argument("--minimal", action="store_true",
-                        help="Minimal output: omit the full package list and shorten content fields (reduces context usage; pairs well with --report-file)")
+                        help="Write the full JSON report (matches with post text) to a single file")
+    parser.add_argument("--report-dir", type=str, default=None,
+                        help="Write a slim report.json plus one match_<k>.json per match (recommended for LLM use: main context stays small, each match's full text is loaded only when a subagent verifies it)")
     parser.add_argument("--mock-pacman-log", type=str, default=None,
                         help="Path to mock pacman.log for testing/reproducibility")
     parser.add_argument("--mock-checkupdates", type=str, default=None,
@@ -894,41 +895,75 @@ def main():
     # ── Build result ──
     all_matches = news_matches + bbs_matches
 
+    # Note: packages_to_update is intentionally NOT included in the output.
+    # Verification (Step 3) uses per-match `package_evidence`, not the full
+    # package list. Carrying the list only bloats context. packages_count
+    # remains so the scale is visible. Humans who want the list run
+    # `checkupdates` directly.
     result = {
         "status": "has_matches" if all_matches else "safe",
         "since_date": since_date.strftime("%Y-%m-%d"),
         "last_upgrade": last_upgrade.strftime("%Y-%m-%d") if last_upgrade else None,
         "lookback_capped": days_since_orig > LOOKBACK_CAP_DAYS if last_upgrade else False,
-        "packages_to_update": sorted(packages),
         "packages_count": len(packages),
         "matches": all_matches,
         "match_count": len(all_matches),
     }
 
-    if args.minimal:
-        # Omit full package list (big), truncate content fields
-        del result["packages_to_update"]
-        for m in result["matches"]:
-            if "first_post" in m and len(m["first_post"]) > 300:
-                m["first_post"] = m["first_post"][:300]
-            if "recent_posts" in m and len(m["recent_posts"]) > 1000:
-                m["recent_posts"] = m["recent_posts"][:1000]
-
     _emit_output(result, args)
+
+
+def _emit_sharded_report(result, out_dir):
+    """Write a slim report.json + one match_<k>.json per match.
+
+    The slim report holds the summary fields and, per match, only the pointer
+    info (title/link/matched_packages/is_necrobump) plus a `match_file` field
+    naming the file with the full evidence. The heavy `first_post` /
+    `recent_posts` text lives in the per-match files, loaded only by the
+    subagent that verifies that match.
+    """
+    os.makedirs(out_dir, exist_ok=True)
+    matches = result.get("matches", [])
+    slim_matches = []
+    for k, m in enumerate(matches):
+        # full match file (untruncated evidence + post text)
+        match_path = os.path.join(out_dir, f"match_{k}.json")
+        with open(match_path, "w") as f:
+            json.dump(m, f, indent=2, ensure_ascii=False)
+        # slim pointer for the main report
+        slim = {kk: vv for kk, vv in m.items()
+                if kk not in ("first_post", "recent_posts", "package_evidence", "content_snippet")}
+        slim["match_file"] = f"match_{k}.json"
+        slim_matches.append(slim)
+    slim_report = dict(result)
+    slim_report["matches"] = slim_matches
+    slim_report["report_layout"] = "sharded"
+    with open(os.path.join(out_dir, "report.json"), "w") as f:
+        json.dump(slim_report, f, indent=2, ensure_ascii=False)
+    print(f"  Slim report written to {out_dir}/report.json ({len(slim_matches)} matches)", file=sys.stderr)
+    print(f"  Per-match files: {out_dir}/match_*.json", file=sys.stderr)
+    print(file=sys.stderr)
 
 
 def _emit_output(result, args):
     """Output the result in requested format.
 
-    Two output modes, mutually exclusive in practice:
-      --report-file PATH : write JSON to a file only (recommended — keeps the
-                            often-large report out of the agent's conversation
-                            context); a one-line confirmation goes to stderr
-                            (which does not enter the context)
-      --json              : print JSON to stdout (for pipes / human inspection)
-    Giving both is allowed and writes the file first; JSON still goes to stdout
-    only if --json was explicitly requested.
+    Output modes (first that applies wins):
+      --report-dir DIR   : (recommended) write a slim report.json (summary +
+                            per-match pointers, NO post text, NO packages_to_update)
+                            plus one match_<k>.json per match with the FULL
+                            untruncated evidence + first_post + recent_posts.
+                            Keeps the main conversation context small; a
+                            subagent loads only the match file it verifies.
+      --report-file PATH : write the full report (all matches with post text)
+                            to a single file.
+      --json             : print JSON to stdout.
+      (none)             : human-readable summary to stdout.
     """
+    if args.report_dir:
+        _emit_sharded_report(result, args.report_dir)
+        return
+
     if args.report_file:
         with open(args.report_file, "w") as f:
             json.dump(result, f, indent=2, ensure_ascii=False)

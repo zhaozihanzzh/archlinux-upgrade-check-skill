@@ -76,10 +76,6 @@ With the same mock data, the script produces:
   "since_date": "2026-08-03",
   "last_upgrade": "2026-08-03",
   "lookback_capped": false,
-  "packages_to_update": [
-    "glibc", "linux-firmware-intel", "nvidia-utils",
-    "pipewire", "shadow", "systemd"
-  ],
   "packages_count": 6,
   "matches": [
     {
@@ -146,14 +142,13 @@ You can also run the checker outside of an LLM session:
 # print JSON to stdout (for pipes / inspection)
 python3 scripts/arch_upgrade_check.py --json
 
-# write JSON to a file only — stdout stays quiet; a one-line confirmation
-# goes to stderr. Recommended when the full package list is large.
+# write JSON to a single file — stdout stays quiet; a one-line confirmation
+# goes to stderr. Use for pipes / humans / when no subagent is available.
 python3 scripts/arch_upgrade_check.py --report-file /tmp/report.json
 
-# --minimal drops the full packages_to_update list and truncates each match's
-# first_post/recent_posts (300/1000 chars) — smaller report, but it can cut the
-# context needed to judge false positives. Use only when the update set is large.
-python3 scripts/arch_upgrade_check.py --report-file /tmp/report.json --minimal
+# --report-dir: write a slim report.json + one match_<k>.json per match
+# (recommended — keeps main context small; subagents load match files on demand)
+python3 scripts/arch_upgrade_check.py --report-dir /tmp/arch-upgrade-check
 
 # scan a custom window instead of "since last upgrade"
 python3 scripts/arch_upgrade_check.py --days 90 --json
