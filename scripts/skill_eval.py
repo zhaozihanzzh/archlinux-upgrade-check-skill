@@ -129,10 +129,24 @@ def resolve_path(path):
 # pi -p --skill runner
 # ──────────────────────────────────────────────────────
 
-def run_pi(prompt, model, skill_path, mock_dir, timeout=300, use_skill=True):
+def run_pi(prompt, model, skill_path, mock_dir, timeout=300, use_skill=True, harness_dir=None):
+    # Project-local skill discovery: run pi with cwd = harness_dir (which contains
+    # .pi/skills/<skill> -> skill_path). pi discovers the skill and injects it into
+    # available_skills with the real path. --approve trusts the project so the
+    # local skill is loaded. This is more reliable than --skill <path> (CLI), which
+    # deepseek-chat did not reliably pick up.
     cmd = [PI_CMD, '-p', '--model', model]
-    if use_skill and skill_path:
-        cmd += ['--skill', skill_path]
+    if use_skill:
+        # --no-extensions disables web tools (web_search/fetch_content) so the LLM
+        # can't shortcut by scraping archlinux.org itself; it must read SKILL.md
+        # and run the bundled script. --approve trusts the harness dir so the
+        # project-local .pi/skills/ skill is discovered.
+        cmd.append('--approve')
+        cmd.append('--no-extensions')
+    else:
+        cmd.append('--approve')
+        cmd.append('--no-skills')
+        cmd.append('--no-extensions')
     cmd.append(prompt)
 
     env = os.environ.copy()
@@ -144,7 +158,7 @@ def run_pi(prompt, model, skill_path, mock_dir, timeout=300, use_skill=True):
     start = time.time()
     try:
         p = subprocess.run(cmd, capture_output=True, text=True,
-                           timeout=timeout, env=env)
+                           timeout=timeout, env=env, cwd=harness_dir)
         elapsed = time.time() - start
         return {
             'exit_code': p.returncode,
@@ -180,7 +194,7 @@ def run_pi(prompt, model, skill_path, mock_dir, timeout=300, use_skill=True):
 # Grading
 # ──────────────────────────────────────────────────────
 
-def grade_eval(eval_def, model, skill_path, timeout=300, use_skill=True, repeat=1):
+def grade_eval(eval_def, model, skill_path, timeout=300, use_skill=True, repeat=1, harness_dir=None):
     """Run one eval through pi -p (with or without skill) and grade the LLM output.
 
     When repeat > 1, runs the same prompt that many times to dampen LLM output
@@ -204,7 +218,7 @@ def grade_eval(eval_def, model, skill_path, timeout=300, use_skill=True, repeat=
     for i in range(repeat):
         tag = f"{label}#{i + 1}" if repeat > 1 else label
         print(f"  E{eid}: {name} [{tag}]...", end=' ', flush=True)
-        result = run_pi(prompt, model, skill_path, mock_dir, timeout=timeout, use_skill=use_skill)
+        result = run_pi(prompt, model, skill_path, mock_dir, timeout=timeout, use_skill=use_skill, harness_dir=harness_dir)
         print(f"done ({result['elapsed']:.1f}s, exit={result['exit_code']})")
 
         checked = [check_llm_assertion(a, result) for a in assertions]
@@ -257,6 +271,8 @@ def main():
                         help='Comma-separated eval IDs to run (default: all)')
     parser.add_argument('--skill', type=str, default=None,
                         help='Path to skill file/directory (default: SKILL_DIR)')
+    parser.add_argument('--harness-dir', type=str, default=None,
+                        help='Directory to run pi from (project-local skill discovery). Default: <skill>/skill-test. A .pi/skills/ symlink to the skill is created automatically. This is more reliable than --skill for triggering.')
     parser.add_argument('--baseline', action='store_true',
                         help='Also run each eval WITHOUT the skill (no --skill), so you can compare the skill\'s incremental value. The skill scripts remain on disk for the baseline to discover.')
     parser.add_argument('--repeat', type=int, default=1,
@@ -269,13 +285,25 @@ def main():
 
     skill_path = args.skill or SKILL_DIR
 
-    print(f"Arch Linux Upgrade Check — Skill Evaluation (Layer 4)")
+    # Set up the harness dir for project-local skill discovery.
+    # A .pi/skills/<skill-name> symlink -> skill_path is created so pi, run with
+    # --approve from this cwd, discovers and injects the skill into available_skills.
+    harness_dir = args.harness_dir or os.path.join(skill_path, 'skill-test')
+    skill_name = os.path.basename(skill_path.rstrip('/'))
+    skills_dir = os.path.join(harness_dir, '.pi', 'skills')
+    os.makedirs(skills_dir, exist_ok=True)
+    link = os.path.join(skills_dir, skill_name)
+    if not os.path.exists(link):
+        os.symlink(skill_path, link)
+
+    print(f"Arch Linux Upgrade Check -- Skill Evaluation (Layer 4)")
     print(f"{'=' * 60}")
-    print(f"Model:    {args.model}")
-    print(f"Skill:    {skill_path}")
-    print(f"Timeout:  {args.timeout}s per run")
-    print(f"Repeat:   {args.repeat}x")
-    print(f"Baseline: {'yes (with-skill vs no-skill)' if args.baseline else 'no (with-skill only)'}")
+    print(f"Model:       {args.model}")
+    print(f"Skill:       {skill_path}")
+    print(f"Harness dir: {harness_dir} (project-local discovery)")
+    print(f"Timeout:     {args.timeout}s per run")
+    print(f"Repeat:      {args.repeat}x")
+    print(f"Baseline:    {'yes (with-skill vs no-skill)' if args.baseline else 'no (with-skill only)'}")
     print()
 
     evals = load_evals()
@@ -298,10 +326,10 @@ def main():
     all_runs = []
     for eval_def in evals:
         all_runs.append(grade_eval(eval_def, args.model, skill_path,
-                                   timeout=args.timeout, use_skill=True, repeat=args.repeat))
+                                   timeout=args.timeout, use_skill=True, repeat=args.repeat, harness_dir=harness_dir))
         if args.baseline:
             all_runs.append(grade_eval(eval_def, args.model, skill_path,
-                                       timeout=args.timeout, use_skill=False, repeat=args.repeat))
+                                       timeout=args.timeout, use_skill=False, repeat=args.repeat, harness_dir=harness_dir))
 
     # Summary per configuration
     by_config = {}
