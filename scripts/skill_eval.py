@@ -209,7 +209,9 @@ def grade_eval(eval_def, model, skill_path, timeout=300, use_skill=True, repeat=
     mock_dir = None
     if mock_args.get('http_dir'):
         http_dir = resolve_path(mock_args['http_dir'])
-        mock_dir = os.path.dirname(http_dir)
+        # normpath strips a trailing slash so dirname gives the parent (e.g.
+        # .../e1) not the dir itself (a trailing '/' made dirname return .../e1/http).
+        mock_dir = os.path.dirname(os.path.normpath(http_dir))
     elif mock_args.get('pacman_log'):
         mock_dir = os.path.dirname(resolve_path(mock_args['pacman_log']))
 
@@ -250,7 +252,7 @@ def grade_eval(eval_def, model, skill_path, timeout=300, use_skill=True, repeat=
             'pass_rate_stdev': round(stdev_pr, 2),
             'passed': sum(r['passed'] for r in runs),
             'failed': sum(r['failed'] for r in runs),
-            'total': runs[0]['total'] if runs else 0,
+            'total': sum(r['total'] for r in runs),
             'time_seconds': round(sum(times) / len(times), 1) if times else 0,
             'repeat': repeat,
         },
