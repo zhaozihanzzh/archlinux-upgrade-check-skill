@@ -73,14 +73,14 @@ With the same mock data, the script produces:
 ```json
 {
   "status": "has_matches",
-  "since_date": "2026-08-03",
-  "last_upgrade": "2026-08-03",
+  "since_date": "2026-08-17",
+  "last_upgrade": "2026-08-17",
   "lookback_capped": false,
   "packages_count": 6,
   "matches": [
     {
       "type": "bbs",
-      "date": "2026-08-09",
+      "date": "2026-08-25",
       "title": "sg dropped from shadow?",
       "link": "https://bbs.archlinux.org/viewtopic.php?id=314544",
       "topic_id": "314544",
@@ -107,7 +107,7 @@ reports back:
 ```
 ## Verification of candidate matches
 
-### Match: BBS Topic "sg dropped from shadow?" (Aug 9)
+### Match: BBS Topic "sg dropped from shadow?" (Aug 25)
 - shadow → RELEVANT. Title directly mentions the package. The topic is
   about the `sg` command being dropped from the `shadow` package.
   You have shadow pending upgrade — this is exactly the upgrade in question.
@@ -117,10 +117,10 @@ your update list.
 
 ## ⚠ Upgrade Check Results
 
-Last full upgrade: 2026-08-03 (about 2 weeks ago) · 6 packages to update
+Last full upgrade: 2026-08-17 (about 2 weeks ago) · 6 packages to update
 
 ### 🔴 Issue Found: `shadow` package — `sg` command removed
-Topic: https://bbs.archlinux.org/viewtopic.php?id=314544 (Aug 9, 2026)
+Topic: https://bbs.archlinux.org/viewtopic.php?id=314544 (Aug 25, 2026)
 
 The `shadow` package has dropped the `sg` command. This is the version you'll
 be updating to.

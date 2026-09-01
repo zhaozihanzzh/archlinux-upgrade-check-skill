@@ -26,10 +26,14 @@ import subprocess
 import time
 import argparse
 import math
+import tempfile
 
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EVALS_JSON = os.path.join(SKILL_DIR, 'evals', 'evals.json')
 PI_CMD = 'pi'
+# 429 auto-retry extension (sensenova/modelscope providers). Loaded via -e so
+# it works even under --no-extensions. Avoids LLM quota stalls aborting runs.
+RETRY_EXT = os.path.expanduser('~/.pi/agent/extensions/nvidia-rate-limit-retry.ts')
 
 # ──────────────────────────────────────────────────────
 # Assertion handlers
@@ -129,36 +133,68 @@ def resolve_path(path):
 # pi -p --skill runner
 # ──────────────────────────────────────────────────────
 
-def run_pi(prompt, model, skill_path, mock_dir, timeout=300, use_skill=True, harness_dir=None):
+def run_pi(prompt, model, skill_path, mock_dir, timeout=300, use_skill=True, harness_dir=None, proxy_env=None, sys_mock=False, clean_cwd=None):
     # Project-local skill discovery: run pi with cwd = harness_dir (which contains
     # .pi/skills/<skill> -> skill_path). pi discovers the skill and injects it into
     # available_skills with the real path. --approve trusts the project so the
     # local skill is loaded. This is more reliable than --skill <path> (CLI), which
     # deepseek-chat did not reliably pick up.
-    cmd = [PI_CMD, '-p', '--model', model]
+    pi_cmd = [PI_CMD, '-p', '--model', model]
     if use_skill:
         # --no-extensions disables web tools (web_search/fetch_content) so the LLM
         # can't shortcut by scraping archlinux.org itself; it must read SKILL.md
         # and run the bundled script. --approve trusts the harness dir so the
         # project-local .pi/skills/ skill is discovered.
-        cmd.append('--approve')
-        cmd.append('--no-extensions')
+        pi_cmd.append('--approve')
+        pi_cmd.append('--no-extensions')
     else:
-        cmd.append('--approve')
-        cmd.append('--no-skills')
-        cmd.append('--no-extensions')
-    cmd.append(prompt)
+        pi_cmd.append('--approve')
+        pi_cmd.append('--no-skills')
+        pi_cmd.append('--no-extensions')
+    # Enable 429 auto-retry so transient quota limits don't abort the run.
+    # --no-extensions disables discovery but explicit -e paths still load.
+    if os.path.exists(RETRY_EXT):
+        pi_cmd.extend(['-e', RETRY_EXT])
+    pi_cmd.append(prompt)
 
     env = os.environ.copy()
     mock_dir_resolved = resolve_path(mock_dir) if mock_dir else None
     if mock_dir_resolved and os.path.isdir(mock_dir_resolved):
         env['ARCH_CHECK_MOCK_DIR'] = mock_dir_resolved
     env['PI_OFFLINE'] = '1'
+    # Make the 429-retry extension cover all providers we might use (the
+    # extension's default is only sensenova/modelscope; deepseek is zhiyuan-ai).
+    env['NVIDIA_PROVIDER_IDS'] = 'zhiyuan-ai,sensenova,modelscope'
+    # When --mock is on, the mitmproxy transparent mock is injected so the
+    # agent's own curl hits the same fixtures the script reads. This is what
+    # makes the baseline fair (see references/mock-env-design.md).
+    if proxy_env:
+        env.update(proxy_env)
+
+    # --sys-mock wraps pi in bwrap-run.sh: mock command shims (checkupdates/pacman),
+    # overlaid /var/log/pacman.log, and a clean cwd that hides the skill tree
+    # (references/system-mock-design.md). Composes with --mock (proxy env passed
+    # into the sandbox via a file).
+    if sys_mock:
+        if not clean_cwd:
+            raise RuntimeError('--sys-mock requires clean_cwd (the empty baseline dir)')
+        if not mock_dir_resolved:
+            raise RuntimeError('--sys-mock requires mock_dir (evals/mock/<eid>)')
+        bwrap_run = os.path.join(os.path.dirname(__file__), 'sys_mock', 'bwrap-run.sh')
+        proxy_file = os.path.join(clean_cwd, '.proxy-env')
+        with open(proxy_file, 'w') as f:
+            for k, v in (proxy_env or {}).items():
+                f.write(f'{k}={v}\n')
+        cmd = [bwrap_run, skill_path, mock_dir_resolved, clean_cwd, proxy_file, '--'] + pi_cmd
+        cwd = clean_cwd
+    else:
+        cmd = pi_cmd
+        cwd = harness_dir
 
     start = time.time()
     try:
         p = subprocess.run(cmd, capture_output=True, text=True,
-                           timeout=timeout, env=env, cwd=harness_dir)
+                           timeout=timeout, env=env, cwd=cwd)
         elapsed = time.time() - start
         return {
             'exit_code': p.returncode,
@@ -194,7 +230,7 @@ def run_pi(prompt, model, skill_path, mock_dir, timeout=300, use_skill=True, har
 # Grading
 # ──────────────────────────────────────────────────────
 
-def grade_eval(eval_def, model, skill_path, timeout=300, use_skill=True, repeat=1, harness_dir=None):
+def grade_eval(eval_def, model, skill_path, timeout=300, use_skill=True, repeat=1, harness_dir=None, proxy_env=None, sys_mock=False, clean_cwd=None):
     """Run one eval through pi -p (with or without skill) and grade the LLM output.
 
     When repeat > 1, runs the same prompt that many times to dampen LLM output
@@ -220,7 +256,7 @@ def grade_eval(eval_def, model, skill_path, timeout=300, use_skill=True, repeat=
     for i in range(repeat):
         tag = f"{label}#{i + 1}" if repeat > 1 else label
         print(f"  E{eid}: {name} [{tag}]...", end=' ', flush=True)
-        result = run_pi(prompt, model, skill_path, mock_dir, timeout=timeout, use_skill=use_skill, harness_dir=harness_dir)
+        result = run_pi(prompt, model, skill_path, mock_dir, timeout=timeout, use_skill=use_skill, harness_dir=harness_dir, proxy_env=proxy_env, sys_mock=sys_mock, clean_cwd=clean_cwd)
         print(f"done ({result['elapsed']:.1f}s, exit={result['exit_code']})")
 
         checked = [check_llm_assertion(a, result) for a in assertions]
@@ -283,13 +319,17 @@ def main():
                         help='Output directory (default: stdout only)')
     parser.add_argument('--timeout', type=int, default=300,
                         help='Per-eval timeout in seconds (default: 300)')
+    parser.add_argument('--mock', action='store_true',
+                        help='Start the mitmproxy transparent mock so the agent curl hits the same fixtures as the script (makes baseline fair). Requires mitmproxy (scripts/.venv/bin/mitmproxy or PATH). See references/mock-env-design.md.')
+    parser.add_argument('--sys-mock', action='store_true',
+                        help='Wrap the baseline run in bwrap with mock command shims (checkupdates/pacman), overlaid /var/log/pacman.log, and a clean cwd that hides the skill tree (references/system-mock-design.md). Only applies to --baseline.')
+    parser.add_argument('--baseline-dir', type=str, default=None,
+                        help='cwd for the true baseline (no skill visible). Default: a temp empty dir outside the skill tree. Only used with --baseline.')
     args = parser.parse_args()
 
     skill_path = args.skill or SKILL_DIR
 
-    # Set up the harness dir for project-local skill discovery.
-    # A .pi/skills/<skill-name> symlink -> skill_path is created so pi, run with
-    # --approve from this cwd, discovers and injects the skill into available_skills.
+    # with-skill harness: skill-test/ (has .pi/skills/<skill> symlink -> skill)
     harness_dir = args.harness_dir or os.path.join(skill_path, 'skill-test')
     skill_name = os.path.basename(skill_path.rstrip('/'))
     skills_dir = os.path.join(harness_dir, '.pi', 'skills')
@@ -298,14 +338,42 @@ def main():
     if not os.path.exists(link):
         os.symlink(skill_path, link)
 
+    # True-baseline harness: an EMPTY dir so the agent has no .pi/skills and no
+    # skill injected into its system prompt; it must work from its own knowledge
+    # + curl (which --mock routes to the same fixtures). We place it under the
+    # skill tree (bwrap-writable); note the agent could still `ls ..` and find
+    # SKILL.md -- a fully isolated view needs a Phase-4 container. The mock
+    # fairness is what this gives us now (mock-env-design.md).
+    baseline_dir = args.baseline_dir or os.path.join(skill_path, 'baseline-harness')
+    os.makedirs(baseline_dir, exist_ok=True)
+    # no .pi/skills here on purpose -- the agent has no skill to discover.
+
+    # --mock: start the transparent mitmproxy mock. with-skill and baseline
+    # both inherit its env so curl hits the same fixtures (fairness).
+    proxy = None
+    proxy_env = None
+    if args.mock:
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
+        import mock_proxy as M  # noqa: E402
+        mock_http_dir = os.path.join(skill_path, 'evals', 'mock')  # set per-eval below
+        proxy = M.MockProxy(os.path.join(mock_http_dir, 'e1', 'http'))  # default; reassigned per-eval
+        print(f"Starting mock proxy (mitmproxy on :{M.DEFAULT_PORT})...")
+        proxy.start()
+        proxy_env = proxy.env()
+        print(f"  CA: {M.CA_CERT}")
+        print(f"  NO_PROXY excludes LLM provider hosts: {proxy_env['NO_PROXY']}")
+
     print(f"Arch Linux Upgrade Check -- Skill Evaluation (Layer 4)")
     print(f"{'=' * 60}")
     print(f"Model:       {args.model}")
     print(f"Skill:       {skill_path}")
     print(f"Harness dir: {harness_dir} (project-local discovery)")
+    print(f"Baseline dir: {baseline_dir} (empty, no skill visible)")
+    print(f"Mock:        {'on (transparent mitmproxy)' if args.mock else 'off'}")
+    print(f"Sys-mock:    {'on (bwrap + PATH shims, baseline only)' if args.sys_mock else 'off'}")
     print(f"Timeout:     {args.timeout}s per run")
     print(f"Repeat:      {args.repeat}x")
-    print(f"Baseline:    {'yes (with-skill vs no-skill)' if args.baseline else 'no (with-skill only)'}")
+    print(f"Baseline:    {'yes (true baseline, skill hidden)' if args.baseline else 'no (with-skill only)'}")
     print()
 
     evals = load_evals()
@@ -328,10 +396,25 @@ def main():
     all_runs = []
     for eval_def in evals:
         all_runs.append(grade_eval(eval_def, args.model, skill_path,
-                                   timeout=args.timeout, use_skill=True, repeat=args.repeat, harness_dir=harness_dir))
+                                   timeout=args.timeout, use_skill=True, repeat=args.repeat, harness_dir=harness_dir, proxy_env=proxy_env))
         if args.baseline:
+            # sys-mock only applies to the baseline: bwrap-run hides the skill
+            # tree (clean cwd) + mocks system state so the no-skill agent is
+            # immersed. with-skill must NOT use it (it needs to see .pi/skills).
+            # clean_cwd must live OUTSIDE skill_path (bwrap --tmpfs SKILL_DIR
+            # overlaps the whole skill tree, including baseline-harness inside
+            # it), so we use a throwaway tmpdir when --sys-mock is on.
+            if args.sys_mock:
+                sys_clean_cwd = tempfile.mkdtemp(prefix='pi-sysmock-')
+            else:
+                sys_clean_cwd = baseline_dir
             all_runs.append(grade_eval(eval_def, args.model, skill_path,
-                                       timeout=args.timeout, use_skill=False, repeat=args.repeat, harness_dir=harness_dir))
+                                       timeout=args.timeout, use_skill=False, repeat=args.repeat, harness_dir=baseline_dir, proxy_env=proxy_env,
+                                       sys_mock=args.sys_mock, clean_cwd=sys_clean_cwd))
+
+    if proxy:
+        proxy.stop()
+        print("Mock proxy stopped.")
 
     # Summary per configuration
     by_config = {}

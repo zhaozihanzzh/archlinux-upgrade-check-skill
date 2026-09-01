@@ -1,0 +1,13 @@
+#!/usr/bin/bash
+# checkupdates shim: emit the mock pending-updates list.
+# Placed earlier in PATH than /usr/bin/checkupdates by sys_mock's bwrap-run.
+#
+# Reads from $ARCH_CHECK_MOCK_DIR/checkupdates.txt (one "pkg ver" per line),
+# matching what the real checkupdates prints. Exit 0 with the list.
+set -euo pipefail
+mock_dir="${ARCH_CHECK_MOCK_DIR:-}"
+if [ -z "$mock_dir" ] || [ ! -f "$mock_dir/checkupdates.txt" ]; then
+  echo "checkupdates shim: no mock fixture (ARCH_CHECK_MOCK_DIR unset)" >&2
+  exit 1
+fi
+cat "$mock_dir/checkupdates.txt"

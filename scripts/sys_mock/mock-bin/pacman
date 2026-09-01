@@ -1,0 +1,97 @@
+#!/usr/bin/bash
+# pacman shim: answer common query flags from mock fixtures so the agent sees
+# a consistent installed/pending state. pacman uses FLAGS not subcommands
+# (-Q, -Qu, -Qi, -Qs), so we detect flag letters, not a subcommand token.
+# Anything unrecognized falls through to real /usr/bin/pacman.
+#
+# Intercepted:
+#   pacman -Q            -> list installed (mock local-db)
+#   pacman -Q <pkg>      -> show one installed pkg (mock local-db)
+#   pacman -Qu / -Q -u   -> pending updates (= checkupdates fixture)
+#   pacman -Qi <pkg>     -> brief info (mock local-db; not full real format)
+#   pacman -Qs <term>    -> grep mock local-db
+#
+# Env: ARCH_CHECK_SYS_MOCK=1 gates interception; ARCH_CHECK_MOCK_DIR points
+# at evals/mock/<eid> (has checkupdates.txt + local-db/).
+set -euo pipefail
+
+REAL_PACMAN=/usr/bin/pacman
+mock_dir="${ARCH_CHECK_MOCK_DIR:-}"
+if [ "${ARCH_CHECK_SYS_MOCK:-0}" != "1" ] || [ -z "$mock_dir" ]; then
+  exec "$REAL_PACMAN" "$@"
+fi
+
+# Collect flag tokens (strip leading -) and operands.
+flagchars=""
+operands=()
+for a in "$@"; do
+  if [[ "$a" == --* ]]; then
+    flagchars+="${a#--}"
+  elif [[ "$a" == -* ]]; then
+    flagchars+="${a#-}"
+  else
+    operands+=("$a")
+  fi
+done
+
+has_Q=0; has_u=0; has_i=0; has_s=0
+[[ "$flagchars" == *Q* || "$flagchars" == *query* ]] && has_Q=1
+[[ "$flagchars" == *u* ]] && has_u=1
+[[ "$flagchars" == *i* ]] && has_i=1
+[[ "$flagchars" == *s* ]] && has_s=1
+
+cu="$mock_dir/checkupdates.txt"
+db="$mock_dir/local-db"
+
+# Only intercept query (-Q) family; sync/install/etc. fall through.
+if [ "$has_Q" = 1 ]; then
+  if [ "$has_u" = 1 ]; then
+    # -Qu: pending updates
+    if [ ! -f "$cu" ]; then echo "pacman shim: no checkupdates fixture" >&2; exit 1; fi
+    awk '{print $1" "$2" -> "$2}' "$cu"
+    exit 0
+  fi
+  if [ "$has_s" = 1 ]; then
+    # -Qs <term>: search installed
+    term="${operands[0]:-}"
+    if [ -d "$db" ]; then
+      for f in "$db"/*; do
+        [ -f "$f" ] || continue
+        if grep -iq "$term" "$f" 2>/dev/null; then
+          echo "local/$(cat "$f")"
+        fi
+      done
+    fi
+    exit 0
+  fi
+  if [ "$has_i" = 1 ]; then
+    # -Qi <pkg>: brief info (real format is verbose; we give name/version/url)
+    pkg="${operands[0]:-}"
+    f="$db/$pkg"
+    if [ -n "$pkg" ] && [ -f "$f" ]; then
+      nv=$(cat "$f")
+      echo "Name            : ${nv%% *}"
+      echo "Version         : ${nv#* }"
+      echo "Description     : $pkg (mock; pending upgrade)"
+      echo "Architecture    : x86_64"
+      echo "URL             : https://archlinux.org/packages/?name=$pkg"
+      exit 0
+    fi
+    echo "error: package '$pkg' was not found" >&2; exit 1
+  fi
+  # plain -Q (no u/i/s): list installed, or one pkg if an operand given
+  if [ -d "$db" ]; then
+    if [ "${#operands[@]}" -gt 0 ]; then
+      pkg="${operands[0]}"
+      f="$db/$pkg"
+      if [ -f "$f" ]; then cat "$f"; else echo "error: package '$pkg' was not found" >&2; exit 1; fi
+    else
+      for f in "$db"/*; do [ -f "$f" ] && cat "$f"; done
+    fi
+    exit 0
+  fi
+  echo "pacman shim: no local-db fixture" >&2; exit 1
+fi
+
+# Anything else: real pacman.
+exec "$REAL_PACMAN" "$@"

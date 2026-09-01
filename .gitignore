@@ -8,3 +8,15 @@ evals/output/
 # Local scratch
 /tmp/
 skill-test/
+.mitm-conf/
+archlinux-baseline-harness/
+scripts/.venv/
+scripts/_test_*.py
+mitm.log
+result.txt
+result2.txt
+out.txt
+err.txt
+baseline-harness/
+baseline_result.txt
+combo_result.txt

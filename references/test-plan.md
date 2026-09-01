@@ -226,11 +226,14 @@ DIR/
 
 ### Test cases
 
-| ID | Test | Prompt | Skill assertions |
-|----|------|--------|-----------------|
-| E1 | regular-upgrade | "我要跑 pacman -Syu 了，先帮我检查下 Arch 官网新闻和论坛有没有需要手动干预的地方。我大概两周前更新的。" | no-crash |
-| E2 | long-time-no-upgrade | "我有一台服务器一年半没更新了，之前都是直接 pacman -Syu 的。帮我看看这次升级有没有什么要注意的。" | no-crash |
-| E3 | custom-days | "帮我检查一下最近 90 天 Arch 社区有没有提到 pipewire 升级相关的问题。" | no-crash, uses-days-flag, mentions-pipewire |
+| ID | Test | Prompt (English gloss) | Skill assertions |
+|----|------|-------------------------|-----------------|
+| E1 | regular-upgrade | "I'm about to run pacman -Syu; before that, check Arch official news and the forum for anything needing manual intervention. I last updated about two weeks ago." | no-crash |
+| E2 | long-time-no-upgrade | "I have a server that hasn't been updated for a year and a half; I used to just run pacman -Syu directly. Help me check if there's anything to watch out for this upgrade." | no-crash |
+| E3 | custom-days | "Help me check whether the Arch community has mentioned any pipewire-upgrade-related issues in the last 90 days." | no-crash, uses-days-flag, mentions-pipewire |
+
+The verbatim (originally Chinese) prompts are stored in `evals/evals.json`; the
+table above is an English gloss.
 
 ### Full test suite (all 4 layers)
 

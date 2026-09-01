@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>sg dropped from shadow? / Pacman &amp; Package Upgrade Issues / Arch Linux Forums</title>
+</head>
+<body>
+<div id="brd-main">
+<div class="blockpost rowodd">
+	<h2><span><span class="conr">#1</span> <a href="viewtopic.php?pid=2306800#p2306800">2026-08-25 10:00:00</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postmsg"><p>After upgrading to <strong>shadow 4.16.0</strong> I noticed the <code>sg</code> command has been dropped from the package. The shadow 4.16.0 release notes confirm this is intentional — <code>sg</code> is removed and users now need to use <code>newgrp</code> to switch groups.</p>
+<p>This is a breaking change in shadow 4.16.0. If you have scripts calling <code>sg</code>, they will break after the upgrade. You need to switch them to <code>newgrp</code> manually before running <code>pacman -Syu</code>.</p></div>
+		</div>
+	</div>
+</div>
+<div class="blockpost roweven">
+	<h2><span><span class="conr">#2</span> <a href="viewtopic.php?pid=2306801#p2306801">2026-08-25 11:30:00</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postmsg"><p>Confirmed. shadow 4.16.0 removes the <code>sg</code> command entirely. <code>newgrp</code> is the replacement. Manual intervention needed if you relied on <code>sg</code>.</p></div>
+		</div>
+	</div>
+</div>
+<div class="blockpost rowodd">
+	<h2><span><span class="conr">#3</span> <a href="viewtopic.php?pid=2306802#p2306802">2026-08-25 13:15:00</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postmsg"><p>Thanks, switched my scripts from <code>sg</code> to <code>newgrp</code> before upgrading. shadow 4.16.0 upgrade went smooth after that.</p></div>
+		</div>
+	</div>
+</div>
+</div>
+</body>
+</html>

@@ -18,9 +18,9 @@ The complete package name appears as a whole word, using `(?<!\w)` / `(?!\w)` lo
 For hyphenated (`-`) or plus-separated (`+`) packages, the script falls back to matching the first component as a standalone word. This handles common usage where people refer to a package by its base name:
 
 ```
-帖子："plasma 好卡啊"  → plasma-desktop, plasma-workspace 的基础名 "plasma" 都命中
-帖子："dovecot 配置"  → dovecot-core 的基础名 "dovecot" 命中
-帖子："nvidia 驱动"   → nvidia-utils 的基础名 "nvidia" 命中
+post: "plasma is so laggy"  -> base "plasma" of plasma-desktop, plasma-workspace both match
+post: "dovecot config"      -> base "dovecot" of dovecot-core matches
+post: "nvidia driver"       -> base "nvidia" of nvidia-utils matches
 ```
 
 **Length gate (≥5 chars)**: Shorter bases like `lib`, `py`, `gtk` (from `libx11`, `python`, `gtk+`) are too common and produce too many false positives. Only bases ≥5 characters are eligible.
