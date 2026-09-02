@@ -102,7 +102,7 @@ if [ -f "$PROXY_ENV_FILE" ]; then
 fi
 
 bwrap --ro-bind / / \
-  --unshare-pid --dev /dev --proc /proc --tmpfs /tmp \
+  --unshare-pid --unshare-uts --hostname archlinux --dev /dev --proc /proc --tmpfs /tmp \
   --bind "$HOME/.pi" "$HOME/.pi" \
   --bind "$CLEAN_CWD" "$CLEAN_CWD" \
   --ro-bind "$SHIM_SRC/checkupdates" /usr/bin/checkupdates \

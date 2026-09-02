@@ -313,6 +313,8 @@ def main():
                         help='Directory to run pi from (project-local skill discovery). Default: <skill>/skill-test. A .pi/skills/ symlink to the skill is created automatically. This is more reliable than --skill for triggering.')
     parser.add_argument('--baseline', action='store_true',
                         help='Also run each eval WITHOUT the skill (no --skill), so you can compare the skill\'s incremental value. The skill scripts remain on disk for the baseline to discover.')
+    parser.add_argument('--baseline-only', action='store_true',
+                        help='Run ONLY the baseline (skip the with-skill run). Implies --baseline. Useful for quickly probing whether a model reports shadow without the skill, without paying the with-skill run cost (e.g. reasoning models are slow).')
     parser.add_argument('--repeat', type=int, default=1,
                         help='Run each eval N times to dampen LLM variance; report mean pass rate (default: 1)')
     parser.add_argument('--output-dir', type=str, default=None,
@@ -373,7 +375,7 @@ def main():
     print(f"Sys-mock:    {'on (bwrap + PATH shims, baseline only)' if args.sys_mock else 'off'}")
     print(f"Timeout:     {args.timeout}s per run")
     print(f"Repeat:      {args.repeat}x")
-    print(f"Baseline:    {'yes (true baseline, skill hidden)' if args.baseline else 'no (with-skill only)'}")
+    print(f"Baseline:    {'yes (true baseline, skill hidden)' if (args.baseline or args.baseline_only) else 'no (with-skill only)'}")
     print()
 
     evals = load_evals()
@@ -395,9 +397,10 @@ def main():
 
     all_runs = []
     for eval_def in evals:
-        all_runs.append(grade_eval(eval_def, args.model, skill_path,
-                                   timeout=args.timeout, use_skill=True, repeat=args.repeat, harness_dir=harness_dir, proxy_env=proxy_env))
-        if args.baseline:
+        if not args.baseline_only:
+            all_runs.append(grade_eval(eval_def, args.model, skill_path,
+                                       timeout=args.timeout, use_skill=True, repeat=args.repeat, harness_dir=harness_dir, proxy_env=proxy_env))
+        if args.baseline or args.baseline_only:
             # sys-mock only applies to the baseline: bwrap-run hides the skill
             # tree (clean cwd) + mocks system state so the no-skill agent is
             # immersed. with-skill must NOT use it (it needs to see .pi/skills).
@@ -405,7 +408,7 @@ def main():
             # overlaps the whole skill tree, including baseline-harness inside
             # it), so we use a throwaway tmpdir when --sys-mock is on.
             if args.sys_mock:
-                sys_clean_cwd = tempfile.mkdtemp(prefix='pi-sysmock-')
+                sys_clean_cwd = tempfile.mkdtemp(prefix='pi-task-')
             else:
                 sys_clean_cwd = baseline_dir
             all_runs.append(grade_eval(eval_def, args.model, skill_path,

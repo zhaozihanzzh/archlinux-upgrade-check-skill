@@ -1,0 +1,201 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Upgrading KDE Frameworks to version 6.29 / Pacman &amp; Package Upgrade Issues / Arch Linux Forums</title>
+<link rel="stylesheet" type="text/css" href="style/ArchLinux.css" />
+<link rel="canonical" href="viewtopic.php?id=314637" title="Page 1" />
+<link rel="alternate" type="application/atom+xml" href="extern.php?action=feed&amp;tid=314637&amp;type=atom" title="Atom topic feed" />
+    <link rel="stylesheet" media="screen" href="style/ArchLinux/arch.css?v=5"/>
+        <link rel="stylesheet" media="screen" href="style/ArchLinux/archnavbar.css?v=5"/>
+    
+<link rel="shortcut icon" href="style/ArchLinux/favicon.ico" />
+</head>
+
+<body>
+<div id="archnavbar" class="anb-forum">
+	<div id="archnavbarlogo"><h1><a href="http://archlinux.org/">Arch Linux</a></h1></div>
+	<div id="archnavbarmenu">
+		<ul id="archnavbarlist">
+			<li id="anb-home"><a href="http://archlinux.org/">Home</a></li><li id="anb-packages"><a href="http://archlinux.org/packages/">Packages</a></li><li id="anb-forums" class="anb-selected"><a href="https://bbs.archlinux.org/">Forums</a></li><li id="anb-wiki"><a href="https://wiki.archlinux.org/">Wiki</a></li><li id="anb-gitlab"><a href="https://gitlab.archlinux.org/archlinux">GitLab</a></li><li id="anb-security"><a href="https://security.archlinux.org/">Security</a></li><li id="anb-aur"><a href="https://aur.archlinux.org/">AUR</a></li><li id="anb-download"><a href="http://archlinux.org/download/">Download</a></li>		</ul>
+	</div>
+</div>
+
+
+<div id="punviewtopic" class="pun">
+<div class="top-box"></div>
+<div class="punwrap">
+
+<div id="brdheader" class="block">
+	<div class="box">
+		<div id="brdmenu" class="inbox">
+			<ul>
+				<li id="navindex" class="isactive"><a href="index.php">Index</a></li>
+				<li id="navrules"><a href="misc.php?action=rules">Rules</a></li>
+				<li id="navsearch"><a href="search.php">Search</a></li>
+				<li id="navregister"><a href="register.php">Register</a></li>
+				<li id="navlogin"><a href="login.php">Login</a></li>
+			</ul>
+		</div>
+		<div id="brdwelcome" class="inbox">
+			<p class="conl">You are not logged in.</p>
+			<ul class="conr">
+				<li><span>Topics: <a href="search.php?action=show_recent" title="Find topics with recent posts.">Active</a> | <a href="search.php?action=show_unanswered" title="Find topics with no replies.">Unanswered</a></span></li>
+			</ul>
+			<div class="clearer"></div>
+		</div>
+	</div>
+</div>
+
+
+
+<div id="brdmain">
+<div class="linkst">
+	<div class="inbox crumbsplus">
+		<ul class="crumbs">
+			<li><a href="index.php">Index</a></li>
+			<li><span>»&#160;</span><a href="viewforum.php?id=44">Pacman &amp; Package Upgrade Issues</a></li>
+			<li><span>»&#160;</span><strong><a href="viewtopic.php?id=314637">Upgrading KDE Frameworks to version 6.29</a></strong></li>
+		</ul>
+		<div class="pagepost">
+			<p class="pagelink conl"><span class="pages-label">Pages: </span><strong class="item1">1</strong></p>
+		</div>
+		<div class="clearer"></div>
+	</div>
+</div>
+
+<div id="p2307561" class="blockpost rowodd firstpost blockpost1">
+	<h2><span><span class="conr">#1</span> <a href="viewtopic.php?pid=2307561#p2307561">2026-08-18 08:48:53</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>romeo-72</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/164751.png?m=1740683422" width="80" height="80" alt="" /></dd>
+						<dd><span>Registered: 2024-12-07</span></dd>
+						<dd><span>Posts: 6</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Upgrading KDE Frameworks to version 6.29</h3>
+					<div class="postmsg">
+						<p>Hi everyone,</p><p>I encountered a small issue today where Dolphin completely refused to open immediately after upgrading KDE Frameworks to version 6.29. When launching dolphin via the terminal, it returned the following shared library error:</p><p>dolphin: error while loading shared libraries: liblmdb.so.1: cannot open shared object file: No such file or directory</p><p>Upon checking /usr/lib/, the lmdb package (version 0.9.35-1) only provides /usr/lib/liblmdb.so, but the current Dolphin binary explicitly looks for the older .so.1 naming convention, creating a broken dependency/binary mismatch.<br />Temporary Workaround for anyone facing the same issue is to create a symlink to trick the system into using the available library:</p><p>sudo ln -s /usr/lib/liblmdb.so /usr/lib/liblmdb.so.1<br />sudo ldconfig</p><p>The pkgs for Dolphin (or Baloo) needs a rebuild against the updated lmdb structure to eliminate this error out-of-the-box. Hope this helps the maintainers push an official fix quickly!</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307562" class="blockpost roweven">
+	<h2><span><span class="conr">#2</span> <a href="viewtopic.php?pid=2307562#p2307562">2026-08-18 08:52:40</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>user_58181</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2025-02-12</span></dd>
+						<dd><span>Posts: 2</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: Upgrading KDE Frameworks to version 6.29</h3>
+					<div class="postmsg">
+						<p>The problem appears to be with baloo 6.29.0-1and is already reported here:</p><p><a href="https://gitlab.archlinux.org/archlinux/packaging/packages/baloo/-/work_items/1" rel="nofollow">Arch Linux baloo packaging issue #1</a></p><div class="codebox"><pre><code>balooctl6: error while loading shared libraries: liblmdb.so.1: cannot open shared object file: No such file or directory</code></pre></div><p><strong>Temporary workaround</strong></p><p>Downgrading Baloo to 6.28.0-1 fixes Dolphin.</p><p>If the previous package is still in the pacman cache:</p><div class="codebox"><pre><code>sudo pacman -U /var/cache/pacman/pkg/baloo-6.28.0-1-x86_64.pkg.tar.zst</code></pre></div><p>Otherwise install it from the Arch Linux Archive:</p><div class="codebox"><pre><code>sudo pacman -U https://archive.archlinux.org/packages/b/baloo/baloo-6.28.0-1-x86_64.pkg.tar.zst</code></pre></div><p>To temporarily prevent upgrading Baloo back to the broken version, add this under `[options]` in `/etc/pacman.conf`: `IgnorePkg = baloo`</p><p>Remove it once the package is fixed.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="postlinksb">
+	<div class="inbox crumbsplus">
+		<div class="pagepost">
+			<p class="pagelink conl"><span class="pages-label">Pages: </span><strong class="item1">1</strong></p>
+		</div>
+		<ul class="crumbs">
+			<li><a href="index.php">Index</a></li>
+			<li><span>»&#160;</span><a href="viewforum.php?id=44">Pacman &amp; Package Upgrade Issues</a></li>
+			<li><span>»&#160;</span><strong><a href="viewtopic.php?id=314637">Upgrading KDE Frameworks to version 6.29</a></strong></li>
+		</ul>
+		<div class="clearer"></div>
+	</div>
+</div>
+</div>
+
+<div id="brdfooter" class="block">
+	<h2><span>Board footer</span></h2>
+	<div class="box">
+		<div id="brdfooternav" class="inbox">
+			<div class="conl">
+				<form id="qjump" method="get" action="viewforum.php">
+					<div><label><span>Jump to<br /></span>
+					<select name="id" onchange="window.location=('viewforum.php?id='+this.options[this.selectedIndex].value)">
+						<optgroup label="Technical Issues and Assistance">
+							<option value="23">Newbie Corner</option>
+							<option value="17">Installation</option>
+							<option value="22">Kernel &amp; Hardware</option>
+							<option value="18">Applications &amp; Desktop Environments</option>
+							<option value="31">Laptop Issues</option>
+							<option value="8">Networking, Server, and Protection</option>
+							<option value="32">Multimedia and Games</option>
+							<option value="51">Arch Linux Guided Installer</option>
+							<option value="50">System Administration</option>
+							<option value="35">Other Architectures</option>
+						</optgroup>
+						<optgroup label="Arch-centric">
+							<option value="24">Announcements, Package &amp; Security Advisories</option>
+							<option value="1">Arch Discussion</option>
+							<option value="13">Forum &amp; Wiki discussion</option>
+						</optgroup>
+						<optgroup label="Pacman Upgrades, Packaging &amp; AUR">
+							<option value="44" selected="selected">Pacman &amp; Package Upgrade Issues</option>
+							<option value="49">[testing] Repo Forum</option>
+							<option value="4">Creating &amp; Modifying Packages</option>
+							<option value="38">AUR Issues, Discussion &amp; PKGBUILD Requests</option>
+						</optgroup>
+						<optgroup label="Contributions &amp; Discussion">
+							<option value="20">GNU/Linux Discussion</option>
+							<option value="27">Community Contributions</option>
+							<option value="33">Programming &amp; Scripting</option>
+							<option value="30">Other Languages</option>
+							<option value="47">Artwork and Screenshots</option>
+						</optgroup>
+					</select></label>
+					<input type="submit" value=" Go " accesskey="g" />
+					</div>
+				</form>
+			</div>
+			<div class="conr">
+				<p id="feedlinks"><span class="atom"><a href="extern.php?action=feed&amp;tid=314637&amp;type=atom">Atom topic feed</a></span></p>
+				<p id="poweredby">Powered by <a href="http://fluxbb.org/">FluxBB</a></p>
+			</div>
+			<div class="clearer"></div>
+		</div>
+	</div>
+</div>
+
+
+
+</div>
+<div class="end-box"></div>
+</div>
+
+</body>
+</html>

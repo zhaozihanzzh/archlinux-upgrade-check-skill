@@ -1,0 +1,736 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>[SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew / Pacman &amp; Package Upgrade Issues / Arch Linux Forums</title>
+<link rel="stylesheet" type="text/css" href="style/ArchLinux.css" />
+<link rel="canonical" href="viewtopic.php?id=314590" title="Page 1" />
+<link rel="alternate" type="application/atom+xml" href="extern.php?action=feed&amp;tid=314590&amp;type=atom" title="Atom topic feed" />
+    <link rel="stylesheet" media="screen" href="style/ArchLinux/arch.css?v=5"/>
+        <link rel="stylesheet" media="screen" href="style/ArchLinux/archnavbar.css?v=5"/>
+    
+<link rel="shortcut icon" href="style/ArchLinux/favicon.ico" />
+</head>
+
+<body>
+<div id="archnavbar" class="anb-forum">
+	<div id="archnavbarlogo"><h1><a href="http://archlinux.org/">Arch Linux</a></h1></div>
+	<div id="archnavbarmenu">
+		<ul id="archnavbarlist">
+			<li id="anb-home"><a href="http://archlinux.org/">Home</a></li><li id="anb-packages"><a href="http://archlinux.org/packages/">Packages</a></li><li id="anb-forums" class="anb-selected"><a href="https://bbs.archlinux.org/">Forums</a></li><li id="anb-wiki"><a href="https://wiki.archlinux.org/">Wiki</a></li><li id="anb-gitlab"><a href="https://gitlab.archlinux.org/archlinux">GitLab</a></li><li id="anb-security"><a href="https://security.archlinux.org/">Security</a></li><li id="anb-aur"><a href="https://aur.archlinux.org/">AUR</a></li><li id="anb-download"><a href="http://archlinux.org/download/">Download</a></li>		</ul>
+	</div>
+</div>
+
+
+<div id="punviewtopic" class="pun">
+<div class="top-box"></div>
+<div class="punwrap">
+
+<div id="brdheader" class="block">
+	<div class="box">
+		<div id="brdmenu" class="inbox">
+			<ul>
+				<li id="navindex" class="isactive"><a href="index.php">Index</a></li>
+				<li id="navrules"><a href="misc.php?action=rules">Rules</a></li>
+				<li id="navsearch"><a href="search.php">Search</a></li>
+				<li id="navregister"><a href="register.php">Register</a></li>
+				<li id="navlogin"><a href="login.php">Login</a></li>
+			</ul>
+		</div>
+		<div id="brdwelcome" class="inbox">
+			<p class="conl">You are not logged in.</p>
+			<ul class="conr">
+				<li><span>Topics: <a href="search.php?action=show_recent" title="Find topics with recent posts.">Active</a> | <a href="search.php?action=show_unanswered" title="Find topics with no replies.">Unanswered</a></span></li>
+			</ul>
+			<div class="clearer"></div>
+		</div>
+	</div>
+</div>
+
+
+
+<div id="brdmain">
+<div class="linkst">
+	<div class="inbox crumbsplus">
+		<ul class="crumbs">
+			<li><a href="index.php">Index</a></li>
+			<li><span>»&#160;</span><a href="viewforum.php?id=44">Pacman &amp; Package Upgrade Issues</a></li>
+			<li><span>»&#160;</span><strong><a href="viewtopic.php?id=314590">[SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</a></strong></li>
+		</ul>
+		<div class="pagepost">
+			<p class="pagelink conl"><span class="pages-label">Pages: </span><strong class="item1">1</strong></p>
+		</div>
+		<div class="clearer"></div>
+	</div>
+</div>
+
+<div id="p2307161" class="blockpost rowodd firstpost blockpost1">
+	<h2><span><span class="conr">#1</span> <a href="viewtopic.php?pid=2307161#p2307161">2026-08-22 06:48:43</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>dimich</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/30665.gif?m=1572193442" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Kharkiv, Ukraine</span></dd>
+						<dd><span>Registered: 2009-11-03</span></dd>
+						<dd><span>Posts: 774</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>[SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<p>After upgrade:</p><div class="codebox"><pre><code>[2026-08-22T08:49:36+0300] [ALPM] warning: /etc/tpm2-tss/fapi-profiles/P_ECCP384SHA384.json installed as /etc/tpm2-tss/fapi-profiles/P_ECCP384SHA384.json.pacnew
+[2026-08-22T08:49:36+0300] [ALPM] warning: /etc/tpm2-tss/fapi-profiles/P_RSA3072SHA384.json installed as /etc/tpm2-tss/fapi-profiles/P_RSA3072SHA384.json.pacnew
+[2026-08-22T08:49:36+0300] [ALPM] upgraded tpm2-tss (4.1.3-1 -&gt; 4.2.0-2)</code></pre></div><p>As I can see, some values changed, some entries removed in jsons. I&#039;ve never changed any defaults in /etc/tpm2-tss/.</p><p>Is it safe to simply rename *.json.pacnew to *.json?<br />Is it <em>necessary</em> to rename *.json.pacnew to *.json? If so, shouldn&#039;t &quot;tpm2-tss &gt;= 4.2.0 requires manual intervention&quot; be announced?</p>
+						<p class="postedit"><em>Last edited by dimich (2026-08-22 11:14:39)</em></p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307162" class="blockpost roweven">
+	<h2><span><span class="conr">#2</span> <a href="viewtopic.php?pid=2307162#p2307162">2026-08-22 07:20:44</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>kescherArch</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/128407.png?m=1783288437" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Vienna, Austria</span></dd>
+						<dd><span>Registered: 2020-05-12</span></dd>
+						<dd><span>Posts: 10</span></dd>
+						<dd class="usercontacts"><span class="website"><a href="https://kescher.at" rel="nofollow">Website</a></span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: [SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<p>Looking at the <a href="https://github.com/tpm2-software/tpm2-tss/compare/4.1.4...4.2.0#diff-69e4658fc5d7e903ffda4a06b3d5b905884023abd3e0cb109f2f4cec5c5aa825" rel="nofollow">upstream&#039;s changed files</a> (switch tab to Changed files, then re-enter the URL to go to the relevant changes... ugh, GitHub), I agree this should be a news feed entry. The old profiles seem very incompatible to me with the changes listed.</p>
+						<p class="postedit"><em>Last edited by kescherArch (2026-08-22 07:21:37)</em></p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307164" class="blockpost rowodd">
+	<h2><span><span class="conr">#3</span> <a href="viewtopic.php?pid=2307164#p2307164">2026-08-22 07:52:38</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>athan</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/153808.jpg?m=1733767050" width="75" height="80" alt="" /></dd>
+						<dd><span>From: EU</span></dd>
+						<dd><span>Registered: 2023-10-03</span></dd>
+						<dd><span>Posts: 33</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: [SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<div class="quotebox"><cite>dimich wrote:</cite><blockquote><div><p>Is it <em>necessary</em> to rename *.json.pacnew to *.json? If so, shouldn&#039;t &quot;tpm2-tss &gt;= 4.2.0 requires manual intervention&quot; be announced?</p></div></blockquote></div><p>Yes, renaming *.json.pacnew to *.json is the solution and it definitely should have been announced that requires manual intervention.</p>
+						<p class="postedit"><em>Last edited by athan (2026-08-22 07:53:03)</em></p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307165" class="blockpost roweven">
+	<h2><span><span class="conr">#4</span> <a href="viewtopic.php?pid=2307165#p2307165">2026-08-22 08:16:06</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>SimonJ</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/136089.jpg?m=1741121838" width="80" height="60" alt="" /></dd>
+						<dd><span>From: Spain</span></dd>
+						<dd><span>Registered: 2021-05-11</span></dd>
+						<dd><span>Posts: 375</span></dd>
+						<dd class="usercontacts"><span class="website"><a href="https://simonjones49.codeberg.page/arch-docs/" rel="nofollow">Website</a></span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: [SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<p>I run pacdiff and this was an option, after inspection I realised I never changed anything so I overwrote the files. Is this not the way to do it?</p>
+					</div>
+					<div class="postsignature postmsg"><hr /><p>Rlu: 222126</p></div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307167" class="blockpost rowodd">
+	<h2><span><span class="conr">#5</span> <a href="viewtopic.php?pid=2307167#p2307167">2026-08-22 08:34:20</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>kescherArch</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/128407.png?m=1783288437" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Vienna, Austria</span></dd>
+						<dd><span>Registered: 2020-05-12</span></dd>
+						<dd><span>Posts: 10</span></dd>
+						<dd class="usercontacts"><span class="website"><a href="https://kescher.at" rel="nofollow">Website</a></span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: [SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<div class="quotebox"><cite>SimonJ wrote:</cite><blockquote><div><p>I run pacdiff and this was an option, after inspection I realised I never changed anything so I overwrote the files. Is this not the way to do it?</p></div></blockquote></div><p>Running pacman-contrib&#039;s pacdiff here is equivalent to &quot;renaming *.json.pacnew to *.json&quot;, so, yes, this is the way to do it.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307168" class="blockpost roweven">
+	<h2><span><span class="conr">#6</span> <a href="viewtopic.php?pid=2307168#p2307168">2026-08-22 08:51:32</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>cryptearth</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2024-02-03</span></dd>
+						<dd><span>Posts: 2,308</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: [SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<div class="quotebox"><cite>SimonJ wrote:</cite><blockquote><div><p>I run pacdiff and this was an option, after inspection I realised I never changed anything so I overwrote the files. Is this not the way to do it?</p></div></blockquote></div><p>did the same</p><br /><p>although i had a play-around with my systems tpm some tine ago i learned it&#039;s not suitable for my needs and started to collect several usb tokens<br />but from a quick look: seems like a re-naming refactoring<br />so - is it required? if you use these specific algorithms ... i guess: yes - but it depends on whether you use your systems tpm at all - of not just removing tpm related packages shouldn&#039;t break any dependencies</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307175" class="blockpost rowodd">
+	<h2><span><span class="conr">#7</span> <a href="viewtopic.php?pid=2307175#p2307175">2026-08-22 09:29:57</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>dimich</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/30665.gif?m=1572193442" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Kharkiv, Ukraine</span></dd>
+						<dd><span>Registered: 2009-11-03</span></dd>
+						<dd><span>Posts: 774</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: [SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<div class="quotebox"><cite>cryptearth wrote:</cite><blockquote><div><p>so - is it required? if you use these specific algorithms ... i guess: yes - but it depends on whether you use your systems tpm at all</p></div></blockquote></div><p>I don&#039;t but who knows what may get broken by invalid configuration..</p><div class="quotebox"><cite>cryptearth wrote:</cite><blockquote><div><p>of not just removing tpm related packages shouldn&#039;t break any dependencies</p></div></blockquote></div><p>I wouldn&#039;t keep it installed at all, but for some reasons it&#039;s a dependency for gnupg (pacman, thunderbird) and libsecret (kicad, network-manager-applet). Omitting non-optional dependencies is quite risky.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307176" class="blockpost roweven">
+	<h2><span><span class="conr">#8</span> <a href="viewtopic.php?pid=2307176#p2307176">2026-08-22 09:35:39</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>SimonJ</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/136089.jpg?m=1741121838" width="80" height="60" alt="" /></dd>
+						<dd><span>From: Spain</span></dd>
+						<dd><span>Registered: 2021-05-11</span></dd>
+						<dd><span>Posts: 375</span></dd>
+						<dd class="usercontacts"><span class="website"><a href="https://simonjones49.codeberg.page/arch-docs/" rel="nofollow">Website</a></span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: [SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<div class="quotebox"><cite>dimich wrote:</cite><blockquote><div><div class="quotebox"><cite>cryptearth wrote:</cite><blockquote><div><p>so - is it required? if you use these specific algorithms ... i guess: yes - but it depends on whether you use your systems tpm at all</p></div></blockquote></div><p>I don&#039;t but who knows what may get broken by invalid configuration..</p><div class="quotebox"><cite>cryptearth wrote:</cite><blockquote><div><p>of not just removing tpm related packages shouldn&#039;t break any dependencies</p></div></blockquote></div><p>I wouldn&#039;t keep it installed at all, but for some reasons it&#039;s a dependency for gnupg (pacman, thunderbird) and libsecret (kicad, network-manager-applet). Omitting non-optional dependencies is quite risky.</p></div></blockquote></div><p>I looked at this and wondered whether to try one of Seth&#039;s dummy packages, then I realised I don&#039; t really know what this does so left it alone.</p>
+					</div>
+					<div class="postsignature postmsg"><hr /><p>Rlu: 222126</p></div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307177" class="blockpost rowodd">
+	<h2><span><span class="conr">#9</span> <a href="viewtopic.php?pid=2307177#p2307177">2026-08-22 09:40:39</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>loqs</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2014-03-06</span></dd>
+						<dd><span>Posts: 19,027</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: [SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<p>See <a href="https://gitlab.archlinux.org/archlinux/packaging/packages/tpm2-tss/-/commit/db2cb903a8672ce43034d4a387b020373ca7c55a" rel="nofollow">https://gitlab.archlinux.org/archlinux/ … 373ca7c55a</a> which added backup entries for etc/tpm2-tss/fapi-profiles/P_ECCP384SHA384.json and etc/tpm2-tss/fapi-profiles/P_RSA3072SHA384.json which were provided by tpm2-tss&#160; 4.1.3-1 but not in the backup array so pacman encountered the files as provided by 4.1.3-1 with no default config record for that version triggering the .pacnew creation.</p>
+						<p class="postedit"><em>Last edited by loqs (2026-08-22 09:41:50)</em></p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307178" class="blockpost roweven">
+	<h2><span><span class="conr">#10</span> <a href="viewtopic.php?pid=2307178#p2307178">2026-08-22 09:54:33</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>dimich</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/30665.gif?m=1572193442" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Kharkiv, Ukraine</span></dd>
+						<dd><span>Registered: 2009-11-03</span></dd>
+						<dd><span>Posts: 774</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: [SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<div class="quotebox"><cite>loqs wrote:</cite><blockquote><div><p>were provided by tpm2-tss&#160; 4.1.3-1 but not in the backup array so pacman encountered the files as provided by 4.1.3-1 with no default config record for that version triggering the .pacnew creation.</p></div></blockquote></div><p>Interesting. So it would work properly as incremental upgrade 4.1.3-1 -&gt; 4.2.0-1 -&gt; 4.2.0-2 but fails to handle unchanged configs because of direct jump from 4.1.3-1 to 4.2.0-2?</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307179" class="blockpost rowodd">
+	<h2><span><span class="conr">#11</span> <a href="viewtopic.php?pid=2307179#p2307179">2026-08-22 10:02:47</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>loqs</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2014-03-06</span></dd>
+						<dd><span>Posts: 19,027</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: [SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<div class="quotebox"><cite>dimich wrote:</cite><blockquote><div><p>Interesting. So it would work properly as incremental upgrade 4.1.3-1 -&gt; 4.2.0-1 -&gt; 4.2.0-2 but fails to handle unchanged configs because of direct jump from 4.1.3-1 to 4.2.0-2?</p></div></blockquote></div><p>You would get the issue on the first update to 4.2.0-1 or later as that is when the config files appear in the PKGBUILD&#039;s backup array so pacman then applies the backup array logic but with no old record so from what pacman can tell those config files must have changed so it creates .pacsaves of them.<br />Edit:<br /><a href="https://wiki.archlinux.org/title/Pacman/Pacnew_and_Pacsave#.pacnew" rel="nofollow">https://wiki.archlinux.org/title/Pacman … ve#.pacnew</a></p><div class="quotebox"><cite>wiki wrote:</cite><blockquote><div><p>original = X, current = Y, new = Z<br />&#160; &#160; All three versions are different, so leave the current version in place, install the new version with a .pacnew extension and warn the user about the new version. The user will be expected to manually merge any changes necessary from the new version into the current version.</p><p>Rarely, when an upgraded package includes a backup file the previous version did not, the situation is correctly handled as X/Y/Y or X/Y/Z, with X being a non-existant value.</p></div></blockquote></div>
+						<p class="postedit"><em>Last edited by loqs (2026-08-22 10:09:58)</em></p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307183" class="blockpost roweven">
+	<h2><span><span class="conr">#12</span> <a href="viewtopic.php?pid=2307183#p2307183">2026-08-22 11:14:23</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>dimich</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/30665.gif?m=1572193442" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Kharkiv, Ukraine</span></dd>
+						<dd><span>Registered: 2009-11-03</span></dd>
+						<dd><span>Posts: 774</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: [SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<p>Ok, 4.2.0-1 -&gt; 4.2.0-2 has nothing to do with configs.</p><div class="quotebox"><cite>wiki wrote:</cite><blockquote><div><p>All three versions are different, so leave the current version in place, install the new version with a .pacnew extension and warn the user about the new version.</p></div></blockquote></div><p>It was unexpected that there is three-way difference in the directory that never being modified. So the cause is that files included into backup list and their contents changed in the same upgrade?</p><div class="quotebox"><cite>wiki wrote:</cite><blockquote><div><p>Rarely, when an upgraded package includes a backup file the previous version did not, the situation is correctly handled as X/Y/Y or X/Y/Z, with X being a non-existant value.</p></div></blockquote></div><p>It would be correctly handled if new version can successfully parse old file. I&#039;m not sure it can for this particular upgrade.<br />Anyway, renamed *.json.pacnew to *.json and that&#039;s it. Marking as solved.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307189" class="blockpost rowodd">
+	<h2><span><span class="conr">#13</span> <a href="viewtopic.php?pid=2307189#p2307189">2026-08-22 12:33:54</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>loqs</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2014-03-06</span></dd>
+						<dd><span>Posts: 19,027</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: [SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<div class="quotebox"><cite>dimich wrote:</cite><blockquote><div><p>It was unexpected that there is three-way difference in the directory that never being modified. So the cause is that files included into backup list and their contents changed in the same upgrade?</p></div></blockquote></div><p>Yes very unfortunate coincidence.</p><div class="quotebox"><cite>dimich wrote:</cite><blockquote><div><p>It would be correctly handled if new version can successfully parse old file. I&#039;m not sure it can for this particular upgrade.</p></div></blockquote></div><p>pacman only works off the hashes. Hopefully tpm-tss can parse both the old and new configs.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307197" class="blockpost roweven">
+	<h2><span><span class="conr">#14</span> <a href="viewtopic.php?pid=2307197#p2307197">2026-08-22 13:32:32</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>cryptearth</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2024-02-03</span></dd>
+						<dd><span>Posts: 2,308</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: [SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<div class="quotebox"><cite>dimich wrote:</cite><blockquote><div><div class="quotebox"><cite>cryptearth wrote:</cite><blockquote><div><p>of not just removing tpm related packages shouldn&#039;t break any dependencies</p></div></blockquote></div><p>I wouldn&#039;t keep it installed at all, but for some reasons it&#039;s a dependency for gnupg (pacman, thunderbird) and libsecret (kicad, network-manager-applet). Omitting non-optional dependencies is quite risky.</p></div></blockquote></div><p>and gnupg is a hard dependency for several other packages<br />i wasn&#039;t aware of it depending hard on tpm as i remember back when i gave up my tests i removed anything tpm and most gnupg related - but i&#039;m not sure if something got stuck as i, too, got this yesterday ... so guess due to this dependency it&#039;s on my system, too - although i question why gnupg even does depend hard on anything tpm related as, although quite common, it should not be assumed that every hardware has one or have it enabled</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307204" class="blockpost rowodd">
+	<h2><span><span class="conr">#15</span> <a href="viewtopic.php?pid=2307204#p2307204">2026-08-22 14:05:33</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>seth</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/63451.png?m=1751375556" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Won&#039;t reply 2 private help req</span></dd>
+						<dd><span>Registered: 2012-09-03</span></dd>
+						<dd><span>Posts: 77,630</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: [SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<div class="codebox"><pre><code>for name in $(pacman -Qlq gnupg | grep -E &#039;/usr/(bin|lib/gnupg)/.&#039;); do ldd $name | grep tpm; done</code></pre></div><p>I kinda doubt that this is an extremely hard dependency…</p>
+					</div>
+					<div class="postsignature postmsg"><hr /><p><a href="http://wiki.archlinux.org/title/List_of_applications/Internet#Without_a_dedicated_client" rel="nofollow">How to upload text</a> · <a href="http://wiki.archlinux.org/title/Systemd#Change_default_target_to_boot_into" rel="nofollow">How to boot w/o GUI</a> · <a href="http://wiki.archlinux.org/title/Dual_boot_with_Windows#Fast_Startup_and_hibernation" rel="nofollow">Disable Windows Fast-Start!</a> · <a href="http://wiki.archlinux.org/title/Xinit#xinitrc" rel="nofollow">Fix your xinitrc</a></p></div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307214" class="blockpost roweven">
+	<h2><span><span class="conr">#16</span> <a href="viewtopic.php?pid=2307214#p2307214">2026-08-22 14:56:51</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>dimich</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/30665.gif?m=1572193442" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Kharkiv, Ukraine</span></dd>
+						<dd><span>Registered: 2009-11-03</span></dd>
+						<dd><span>Posts: 774</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: [SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<div class="quotebox"><cite>seth wrote:</cite><blockquote><div><p>... | grep tpm</p></div></blockquote></div><div class="codebox"><pre><code>... | grep tss2</code></pre></div><p>/usr/lib/gnupg/tpm2daemon links it.</p>
+						<p class="postedit"><em>Last edited by dimich (2026-08-22 15:00:28)</em></p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307267" class="blockpost rowodd">
+	<h2><span><span class="conr">#17</span> <a href="viewtopic.php?pid=2307267#p2307267">2026-08-22 21:45:30</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>cryptearth</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd><span>Registered: 2024-02-03</span></dd>
+						<dd><span>Posts: 2,308</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: [SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<p>well, although this isn&#039;t the place for this rant - but such are the things why i decided against getting into pgp - not because the pgp standard itself is bad - in fact it has quite some pros I&#039;d like to have in my projects - but it&#039;s gnupg as de-facto implementation and all the issues it comes with<br />this seemingly random dependency drags in some stuff that should not be a hard requirement - as, as mentioned, it should not be expected that every system has a tpm or that it is enabled (in my case i have a am4 platform with a in-cpu ftmp - yet the bios allows me to disabled it - hence whatever gnupg thinks to achieve with that tpm daemon would just fail - and as tpm are not designed as long term key storage i doubt even gnupg tries something as stupid as to store a key inside a tpm)<br />but, same as with many other tiny &quot;well, gnupg doesn&#039;t follow the pgp standard exactly here&quot; things i guess gnupg devs yet again will find some stupid reason to keep this hard dependency instead of just make it optional as it should<br />sad to see that few devs of a project which became the de-facto implementation of an otherwise good standard cause so much trouble at each and every corner - hope sequoia-pgp gets some much needed momentum</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307277" class="blockpost roweven">
+	<h2><span><span class="conr">#18</span> <a href="viewtopic.php?pid=2307277#p2307277">2026-08-23 06:13:44</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>seth</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/63451.png?m=1751375556" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Won&#039;t reply 2 private help req</span></dd>
+						<dd><span>Registered: 2012-09-03</span></dd>
+						<dd><span>Posts: 77,630</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: [SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<p><a href="https://github.com/gpg/gnupg/blob/1b8debd65baaa05250ce26079fad15ac7bb16bd5/configure.ac#L1608" rel="nofollow">https://github.com/gpg/gnupg/blob/1b8de … e.ac#L1608</a></p><p>The tpm2daemon is optional and implicitly disabled if tss2 is missing (also proving it&#039;s the only consumer) - you could </p><div class="codebox"><pre><code>NoExtract = usr/lib/gnupg/tpm2daemon</code></pre></div><p> and dummy tpm2-tss, BUT the latter is also dependency for eg. libsecret&#160; (and fwupd) which itself is dependency for A LOT of stuff!</p><p>/usr/lib/libsecret-1.so links it, so <strong>FOR MOST USERS TPM2-TSS IS A HARD DEPENDENCY!</strong></p><p>Also grrr: calling the package tpm2-tss but the libs are libtss2 is probably some long term PsyOp just to trick me!<br /><img src="https://bbs.archlinux.org/img/smilies/tongue.png" width="15" height="15" alt="tongue" /></p>
+						<p class="postedit"><em>Last edited by seth (2026-08-23 06:14:00)</em></p>
+					</div>
+					<div class="postsignature postmsg"><hr /><p><a href="http://wiki.archlinux.org/title/List_of_applications/Internet#Without_a_dedicated_client" rel="nofollow">How to upload text</a> · <a href="http://wiki.archlinux.org/title/Systemd#Change_default_target_to_boot_into" rel="nofollow">How to boot w/o GUI</a> · <a href="http://wiki.archlinux.org/title/Dual_boot_with_Windows#Fast_Startup_and_hibernation" rel="nofollow">Disable Windows Fast-Start!</a> · <a href="http://wiki.archlinux.org/title/Xinit#xinitrc" rel="nofollow">Fix your xinitrc</a></p></div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="p2307283" class="blockpost rowodd">
+	<h2><span><span class="conr">#19</span> <a href="viewtopic.php?pid=2307283#p2307283">2026-08-23 07:22:40</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postbody">
+				<div class="postleft">
+					<dl>
+						<dt><strong>dimich</strong></dt>
+						<dd class="usertitle"><strong>Member</strong></dd>
+						<dd class="postavatar"><img src="https://bbs.archlinux.org/img/avatars/30665.gif?m=1572193442" width="80" height="80" alt="" /></dd>
+						<dd><span>From: Kharkiv, Ukraine</span></dd>
+						<dd><span>Registered: 2009-11-03</span></dd>
+						<dd><span>Posts: 774</span></dd>
+					</dl>
+				</div>
+				<div class="postright">
+					<h3>Re: [SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</h3>
+					<div class="postmsg">
+						<div class="quotebox"><cite>seth wrote:</cite><blockquote><div><p>The tpm2daemon is optional and implicitly disabled if tss2 is missing</p></div></blockquote></div><p>At build time, i.e. depends on build environment. Btw there is stack <a href="https://github.com/gpg/gnupg/blob/1b8debd65baaa05250ce26079fad15ac7bb16bd5/configure.ac#L1608" rel="nofollow">autodetection</a>, it can be either ibm or intel.<br />It seems the right solution would be to split the package into gnupg and gnupg-tpm2 (or gnupg-tpm2-intel, gnupg-tpm2-ibm, if needed).</p><div class="quotebox"><cite>seth wrote:</cite><blockquote><div><p>you could NoExtract = usr/lib/gnupg/tpm2daemon and dummy tpm2-tss</p></div></blockquote></div><p>Yes, for gnupg it seems pretty safe to omit the dependency.</p><div class="quotebox"><cite>seth wrote:</cite><blockquote><div><p>BUT the latter is also dependency for eg. libsecret</p></div></blockquote></div><p>And it is <a href="https://gitlab.archlinux.org/archlinux/packaging/packages/libsecret/-/blob/main/PKGBUILD?ref_type=heads&amp;plain=1#L62" rel="nofollow">enabled explicitly</a>. That&#039;s the bigger problem.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="inbox">
+			<div class="postfoot clearb">
+				<div class="postfootleft"><p><span>Offline</span></p></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="postlinksb">
+	<div class="inbox crumbsplus">
+		<div class="pagepost">
+			<p class="pagelink conl"><span class="pages-label">Pages: </span><strong class="item1">1</strong></p>
+		</div>
+		<ul class="crumbs">
+			<li><a href="index.php">Index</a></li>
+			<li><span>»&#160;</span><a href="viewforum.php?id=44">Pacman &amp; Package Upgrade Issues</a></li>
+			<li><span>»&#160;</span><strong><a href="viewtopic.php?id=314590">[SOLVED] tpm2-tss 4.2.0-2: configs installed as .pacnew</a></strong></li>
+		</ul>
+		<div class="clearer"></div>
+	</div>
+</div>
+</div>
+
+<div id="brdfooter" class="block">
+	<h2><span>Board footer</span></h2>
+	<div class="box">
+		<div id="brdfooternav" class="inbox">
+			<div class="conl">
+				<form id="qjump" method="get" action="viewforum.php">
+					<div><label><span>Jump to<br /></span>
+					<select name="id" onchange="window.location=('viewforum.php?id='+this.options[this.selectedIndex].value)">
+						<optgroup label="Technical Issues and Assistance">
+							<option value="23">Newbie Corner</option>
+							<option value="17">Installation</option>
+							<option value="22">Kernel &amp; Hardware</option>
+							<option value="18">Applications &amp; Desktop Environments</option>
+							<option value="31">Laptop Issues</option>
+							<option value="8">Networking, Server, and Protection</option>
+							<option value="32">Multimedia and Games</option>
+							<option value="51">Arch Linux Guided Installer</option>
+							<option value="50">System Administration</option>
+							<option value="35">Other Architectures</option>
+						</optgroup>
+						<optgroup label="Arch-centric">
+							<option value="24">Announcements, Package &amp; Security Advisories</option>
+							<option value="1">Arch Discussion</option>
+							<option value="13">Forum &amp; Wiki discussion</option>
+						</optgroup>
+						<optgroup label="Pacman Upgrades, Packaging &amp; AUR">
+							<option value="44" selected="selected">Pacman &amp; Package Upgrade Issues</option>
+							<option value="49">[testing] Repo Forum</option>
+							<option value="4">Creating &amp; Modifying Packages</option>
+							<option value="38">AUR Issues, Discussion &amp; PKGBUILD Requests</option>
+						</optgroup>
+						<optgroup label="Contributions &amp; Discussion">
+							<option value="20">GNU/Linux Discussion</option>
+							<option value="27">Community Contributions</option>
+							<option value="33">Programming &amp; Scripting</option>
+							<option value="30">Other Languages</option>
+							<option value="47">Artwork and Screenshots</option>
+						</optgroup>
+					</select></label>
+					<input type="submit" value=" Go " accesskey="g" />
+					</div>
+				</form>
+			</div>
+			<div class="conr">
+				<p id="feedlinks"><span class="atom"><a href="extern.php?action=feed&amp;tid=314590&amp;type=atom">Atom topic feed</a></span></p>
+				<p id="poweredby">Powered by <a href="http://fluxbb.org/">FluxBB</a></p>
+			</div>
+			<div class="clearer"></div>
+		</div>
+	</div>
+</div>
+
+
+
+</div>
+<div class="end-box"></div>
+</div>
+
+</body>
+</html>
