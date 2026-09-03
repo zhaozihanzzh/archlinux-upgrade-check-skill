@@ -1,3 +1,4 @@
+---
 name: archlinux-upgrade-check-skill
 description: >
   Arch Linux pre-upgrade safety check: scans official News and the BBS
