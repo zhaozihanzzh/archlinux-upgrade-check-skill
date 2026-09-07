@@ -33,6 +33,7 @@ URL_FIXTURE_MAP = {
     "https://bbs.archlinux.org/viewforum.php?id=44&p=24": "bbs_page_24.html",
     "https://bbs.archlinux.org/viewforum.php?id=44&p=50": "bbs_page_50.html",
     "https://bbs.archlinux.org/viewtopic.php?id=314544": "bbs_topic_314544.html",
+    "https://bbs.archlinux.org/viewtopic.php?id=314800": "bbs_topic_314800.html",
     "https://bbs.archlinux.org/viewtopic.php?id=314663": "bbs_topic_314663.html",
     "https://bbs.archlinux.org/viewtopic.php?id=314715": "bbs_topic_314715.html",
     "https://bbs.archlinux.org/viewtopic.php?id=314637": "bbs_topic_314637.html",

@@ -50,7 +50,7 @@
         {"name": "no-crash-120s", "description": "Script completes within 120 seconds", "type": "timeout", "max_seconds": 120},
         {"name": "script-exit-0", "description": "arch_upgrade_check.py exits with code 0", "type": "exit_code"},
         {"name": "has-valid-json", "description": "Output is valid JSON", "type": "json_valid"},
-        {"name": "matches-found", "description": "Script found at least one match for --days 90", "type": "json_field_value", "field": "match_count", "expected": 1}
+        {"name": "matches-found", "description": "Script found matches for --days 90 (shared fixtures now include the glibc news + BBS topics)", "type": "json_field_value", "field": "match_count", "expected": 3}
       ],
       "skill_assertions": [
         {"name": "no-crash", "description": "pi subagent exits successfully", "type": "exit_code"},

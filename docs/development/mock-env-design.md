@@ -10,7 +10,7 @@ It is a **design record** (research + chosen approach), not yet implemented.
 ## 1. Why this is needed: the baseline-unfairness root cause
 
 Current `--baseline` (`--no-skills`) is not a true baseline. With
-`sensenova/glm-5.2`, both with-skill and baseline score 3/3 on E1 -- because
+`GLM-5.2`, both with-skill and baseline score 3/3 on E1 -- because
 both ultimately run `arch_upgrade_check.py`, and the script reads mock data
 through the `ARCH_CHECK_MOCK_DIR` environment variable (a local file path).
 The agent's own `curl archlinux.org/news` hits the **real** internet (or
@@ -107,7 +107,7 @@ Components:
    REQUESTS_CA_BUNDLE=<same>             # if any python is spawned
    NO_PROXY=<LLM provider hostnames>     # LLM API bypasses the proxy
    ```
-   `NO_PROXY` is critical: the LLM provider (modelscope/sensenova/sjtu) must
+   `NO_PROXY` is critical: the LLM provider (the provider/the provider/sjtu) must
    not be MITM'd (avoids key exposure and TLS errors). pi's own Node fetch to
    the LLM API either honors `NO_PROXY` (Node honors `NO_PROXY` from env) or
    is unaffected if pi sets its own HTTP agent -- to verify on first run.
@@ -199,7 +199,7 @@ Phase 1 is **implemented and verified at the mechanism level**:
   true-baseline cwd; `run_pi` injects `proxy_env`.
 - Verified: `curl https://archlinux.org/news/?page=1` returns 200 + mock HTML
   (26 KB); unmapped URLs return 404; the script still reads its local mock
-  via `ARCH_CHECK_MOCK_DIR` unaffected; the LLM API call (sensenova) is
+  via `ARCH_CHECK_MOCK_DIR` unaffected; the LLM API call (the provider) is
   bypassed by `NO_PROXY` and returns normally.
 
 **Portability for others to run** (one-time setup):

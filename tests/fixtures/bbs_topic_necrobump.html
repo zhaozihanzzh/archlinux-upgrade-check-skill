@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Keyring errors after partial upgrade / Pacman &amp; Package Upgrade Issues / Arch Linux Forums</title>
+</head>
+<body>
+<div id="brd-main">
+<div id="p1500001" class="blockpost rowodd">
+	<h2><span><span class="conr">#1</span> <a href="viewtopic.php?pid=1500001#p1500001">2026-05-10 09:00:00</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postmsg"><p>I am seeing <code>keyring</code> errors when installing packages since yesterday. <code>pacman-key --refresh-keys</code> does not help. Any ideas?</p></div>
+		</div>
+	</div>
+</div>
+<div id="p1500002" class="blockpost roweven">
+	<h2><span><span class="conr">#2</span> <a href="viewtopic.php?pid=1500002#p1500002">2026-08-10 14:30:00</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postmsg"><p>Same here after this week's update. Running <code>archlinux-keyring</code> update fixed it for me: <code>pacman -Sy archlinux-keyring &amp;&amp; pacman -Su</code>.</p></div>
+		</div>
+	</div>
+</div>
+<div id="p1500003" class="blockpost rowodd">
+	<h2><span><span class="conr">#3</span> <a href="viewtopic.php?pid=1500003#p1500003">2026-08-12 18:45:00</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postmsg"><p>Marking solved: the new <code>archlinux-keyring</code> release fixes the signature chain. Upgrade the keyring package first.</p></div>
+		</div>
+	</div>
+</div>
+</div>
+</body>
+</html>

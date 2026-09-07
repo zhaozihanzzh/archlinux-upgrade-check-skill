@@ -199,13 +199,15 @@ output-dir/
 > real user); the table above is an English gloss. See `evals/evals.json` for
 > the exact prompts.
 
-### Latest result (sensenova/glm-5.2, E1)
+### Latest result (GLM-5.2, E1)
 
-See `references/verification-design.md` for the full delta analysis. Headline:
-with-skill 3/3 reports the shadow `sg` issue; baseline (under
-`--mock --sys-mock`, completed mock network) **also** reports it -- the model
-is strong enough to curl the right BBS board and follow the topic on its own.
-Delta is 0 for GLM-5.2; a positive delta needs a weaker model.
+See `verification-design.md` for the full delta analysis (incl.
+concrete curl-by-curl examples). Headline: with-skill is a stable 3/3 on
+both GLM-5.2 and deepseek-v4-flash. The baseline comparison splits:
+GLM-5.2 also finds shadow without the skill (delta=0, too systematic);
+deepseek-v4-flash finds it only ~1/4 of the time without the skill (the
+skill removes the "does the model think to browse the BBS" coin-flip) --
+the first positive delta.
 
 ---
 
@@ -216,11 +218,11 @@ Delta is 0 for GLM-5.2; a positive delta needs a weaker model.
 | Layer 3 integration results | `evals/output/benchmark.json` |
 | Mock data | `evals/mock/e{1,2,3}/` |
 | HTML test fixtures | `tests/fixtures/` |
-| Design document | `references/design-decisions.md` |
-| Detailed test plan | `references/test-plan.md` |
-| Mock-env design | `references/mock-env-design.md` |
-| System-mock design | `references/system-mock-design.md` |
-| Delta analysis | `references/verification-design.md` |
+| Design document | `design-decisions.md` |
+| Detailed test plan | `test-plan.md` |
+| Mock-env design | `mock-env-design.md` |
+| System-mock design | `system-mock-design.md` |
+| Delta analysis | `verification-design.md` |
 
 ---
 
@@ -283,7 +285,7 @@ python3 scripts/skill_eval.py --model <your-model> --output-dir /tmp/layer4
 `--mock` starts a local mitmproxy that serves the `evals/mock` fixtures as if
 they were `archlinux.org` / `bbs.archlinux.org`, so the agent's own `curl`
 hits the same data the bundled script reads. This is the first step toward a
-*fair* with-skill vs baseline comparison (see `references/mock-env-design.md`).
+*fair* with-skill vs baseline comparison (see `mock-env-design.md`).
 
 **One-time setup** (install mitmproxy in an isolated venv):
 ```
@@ -321,7 +323,7 @@ a bwrap sandbox that: overlays the skill tree with an empty tmpfs (so `cd
 `pacman.log` over the real ones (consistent with the prompt), pins `date` to a
 fixed "today" (so all fixture dates are time-drift-immune), and runs in a
 throwaway cwd outside the skill path. See
-`references/system-mock-design.md`.
+`system-mock-design.md`.
 
 **Fair baseline = `--mock --sys-mock` together**: `--mock` gives both sides the
 same mock network; `--sys-mock` hides the skill from the baseline. Run:
@@ -365,9 +367,11 @@ across runs. This is normal; evaluate through multi-run aggregation
 (`--repeat`).
 
 **Q: The baseline also reported the shadow issue -- isn't the delta 0?**
-A: For `sensenova/glm-5.2`, yes. The model is strong enough to curl the BBS
-"Pacman & Package Upgrade Issues" board (id=44, the same board the script
-hardcodes) and follow the shadow topic on its own. Delta=0 here is honest -- it
-means GLM-5.2 is above the skill's usefulness threshold for this task, not
-that the skill is worthless. A positive delta needs a weaker model or a harder
-task. See `references/verification-design.md`.
+A: For `GLM-5.2`, yes (it always browses the BBS board id=44).
+For `deepseek-v4-flash`, no: across 4 baseline runs it found
+shadow only once (the other 3 missed it -- one curled only news/RSS,
+two reached the BBS board too late). With the skill it is a stable 3/3,
+plus the worker/inline verification drops the false-positive source
+(topic 314363's glibc/nvidia/pipewire/systemd -> NOT_RELEVANT). The
+skill's value is clearest on capable-but-not-reliably-systematic
+models. See `verification-design.md`.

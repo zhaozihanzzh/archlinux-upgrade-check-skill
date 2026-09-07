@@ -27,11 +27,51 @@ import time
 import argparse
 import math
 import tempfile
+import uuid
+import glob
 
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EVALS_JSON = os.path.join(SKILL_DIR, 'evals', 'evals.json')
-PI_CMD = 'pi'
-# 429 auto-retry extension (sensenova/modelscope providers). Loaded via -e so
+# `pi` may be a shell alias (not on $PATH), so subprocess.run (which does
+# not go through a shell) cannot find it. Prefer the absolute path.
+PI_CMD = os.path.expanduser('~/.local/bin/pi')
+if not os.path.exists(PI_CMD):
+    PI_CMD = 'pi'  # fall back to $PATH lookup
+
+
+def extract_tool_calls(session_dir):
+    """Read pi's session .jsonl from session_dir and return a compact list of
+    tool calls (name + arguments) in order. This is the 'bash trace' -- it
+    lets us grade the agent's *method* (ran checkupdates? read the report?
+    fabricated packages?) not just its final answer. Returns None if no
+    session file was found."""
+    files = sorted(glob.glob(os.path.join(session_dir, '**', '*.jsonl'),
+                             recursive=True))
+    if not files:
+        return None
+    calls = []
+    try:
+        for line in open(files[-1], errors='replace'):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                ev = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if ev.get('type') != 'message':
+                continue
+            for c in (ev.get('message', {}).get('content') or []):
+                if c.get('type') == 'toolCall':
+                    calls.append({
+                        'name': c.get('name'),
+                        'arguments': c.get('arguments'),
+                    })
+    except OSError:
+        return None
+    return calls
+
+# 429 auto-retry extension. Loaded via -e so
 # it works even under --no-extensions. Avoids LLM quota stalls aborting runs.
 RETRY_EXT = os.path.expanduser('~/.pi/agent/extensions/nvidia-rate-limit-retry.ts')
 
@@ -79,6 +119,32 @@ def _check_text_contains_any(result, assertion):
         return True, f"matched {matches} in {source}"
     else:
         return False, f"none of {expected} found in {source}"
+
+
+@register_handler('text_not_contains')
+def _check_text_not_contains(result, assertion):
+    expected = assertion.get('expected', '')
+    source = assertion.get('source', 'stdout')
+    text = result.get(source, '')
+    passed = expected not in text
+    if passed:
+        return True, f"'{expected}' correctly absent from {source}"
+    else:
+        return False, f"'{expected}' should NOT appear in {source} (false positive)"
+
+
+@register_handler('text_not_contains_any')
+def _check_text_not_contains_any(result, assertion):
+    expected = assertion.get('expected', [])
+    source = assertion.get('source', 'stdout')
+    text = result.get(source, '')
+    if isinstance(expected, str):
+        expected = [expected]
+    found = [kw for kw in expected if kw in text]
+    if not found:
+        return True, f"none of {expected} present in {source} (correct)"
+    else:
+        return False, f"false-positive keywords found: {found}"
 
 
 @register_handler('timeout')
@@ -138,7 +204,7 @@ def run_pi(prompt, model, skill_path, mock_dir, timeout=300, use_skill=True, har
     # .pi/skills/<skill> -> skill_path). pi discovers the skill and injects it into
     # available_skills with the real path. --approve trusts the project so the
     # local skill is loaded. This is more reliable than --skill <path> (CLI), which
-    # deepseek-chat did not reliably pick up.
+    # some models did not reliably pick up.
     pi_cmd = [PI_CMD, '-p', '--model', model]
     if use_skill:
         # --no-extensions disables web tools (web_search/fetch_content) so the LLM
@@ -157,14 +223,24 @@ def run_pi(prompt, model, skill_path, mock_dir, timeout=300, use_skill=True, har
         pi_cmd.extend(['-e', RETRY_EXT])
     pi_cmd.append(prompt)
 
+    # Capture the pi session so we can extract the agent's tool-call trace
+    # (bash/read/ls/script-run order). Used for trajectory assertions
+    # (ran_checkupdates / script_report_used / no_fabrication).
+    session_dir = tempfile.mkdtemp(prefix='pi-session-')
+    session_id = 'eval-' + uuid.uuid4().hex[:12]
+    pi_cmd.extend(['--session-dir', session_dir, '--session-id', session_id])
+
     env = os.environ.copy()
     mock_dir_resolved = resolve_path(mock_dir) if mock_dir else None
     if mock_dir_resolved and os.path.isdir(mock_dir_resolved):
         env['ARCH_CHECK_MOCK_DIR'] = mock_dir_resolved
     env['PI_OFFLINE'] = '1'
-    # Make the 429-retry extension cover all providers we might use (the
-    # extension's default is only sensenova/modelscope; deepseek is zhiyuan-ai).
-    env['NVIDIA_PROVIDER_IDS'] = 'zhiyuan-ai,sensenova,modelscope'
+    # Make the 429-retry extension cover all providers we might use. The
+    # extension ships a small default set; broaden it from the environment
+    # (the caller exports NVIDIA_PROVIDER_IDS=<comma-separated provider ids>
+    # for the providers they have configured). No provider ids are hardcoded
+    # here so the project stays model-agnostic.
+    env['NVIDIA_PROVIDER_IDS'] = os.environ.get('NVIDIA_PROVIDER_IDS', '')
     # When --mock is on, the mitmproxy transparent mock is injected so the
     # agent's own curl hits the same fixtures the script reads. This is what
     # makes the baseline fair (see references/mock-env-design.md).
@@ -196,19 +272,23 @@ def run_pi(prompt, model, skill_path, mock_dir, timeout=300, use_skill=True, har
         p = subprocess.run(cmd, capture_output=True, text=True,
                            timeout=timeout, env=env, cwd=cwd)
         elapsed = time.time() - start
+        tool_calls = extract_tool_calls(session_dir)
         return {
             'exit_code': p.returncode,
             'stdout': p.stdout,
             'stderr': p.stderr,
             'elapsed': elapsed,
+            'tool_calls': tool_calls,
         }
     except subprocess.TimeoutExpired:
         elapsed = time.time() - start
+        tool_calls = extract_tool_calls(session_dir)
         return {
             'exit_code': -1,
             'stdout': '',
             'stderr': f'TIMEOUT after {elapsed:.1f}s',
             'elapsed': elapsed,
+            'tool_calls': tool_calls,
         }
     except FileNotFoundError:
         return {
@@ -270,6 +350,8 @@ def grade_eval(eval_def, model, skill_path, timeout=300, use_skill=True, repeat=
             'time_seconds': round(result['elapsed'], 1),
             'expectations': checked,
             'llm_output_preview': result['stdout'][:500] if result['stdout'] else '(empty)',
+            'tool_calls': result.get('tool_calls') or [],
+            'tool_call_count': len(result.get('tool_calls') or []),
         })
 
     # Aggregate across repeats

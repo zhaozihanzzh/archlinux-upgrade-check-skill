@@ -168,7 +168,7 @@ shims, `ps aux` was progressively closed):
 - `ARCH_CHECK_SYS_MOCK` / `ARCH_CHECK_MOCK_DIR` env vars removed (leaks)
 - skill tree overlaid with empty tmpfs; cwd is an empty clean dir
 
-Verified (sensenova/glm-5.2): the baseline agent used `pacman -Qs` (mock
+Verified (GLM-5.2): the baseline agent used `pacman -Qs` (mock
 answers), `cd`-ed into the skill path and saw NOTHING, and never found mock
 fixtures. The system layer is fully convincing.
 

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>升级后系统卡在 early boot / Pacman &amp; Package Upgrade Issues / Arch Linux Forums</title>
+</head>
+<body>
+<div id="brd-main">
+<div id="p2306900" class="blockpost rowodd">
+	<h2><span><span class="conr">#1</span> <a href="viewtopic.php?pid=2306900#p2306900">2026-08-22 09:15:00</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postmsg"><p>今天 <code>pacman -Syu</code> 之后重启，系统卡在 <code>starting version 2.41</code> 就不动了，进不了桌面。从 live USB chroot 进去看，是 <strong>glibc 2.41-1</strong> 这次升级把 <code>/lib64</code> 从目录改成了指向 <code>lib</code> 的软链。</p>
+<p>我之前 <code>/lib64</code> 是个目录（里面有手放的库），glibc 2.41 升级时 pacman 拒绝覆盖，留下半升级状态，结果重启起不来。</p>
+<p>解决：升级前先 <code>rm -rf /lib64 &amp;&amp; ln -s lib /lib64</code>，把 <code>/lib64</code> 变成软链，再跑 <code>pacman -Syu</code>。这是 glibc 2.41 的已知手动干预项，官方 news 也发了公告。升级 glibc 前一定先处理 <code>/lib64</code>。</p></div>
+		</div>
+	</div>
+</div>
+<div id="p2306901" class="blockpost roweven">
+	<h2><span><span class="conr">#2</span> <a href="viewtopic.php?pid=2306901#p2306901">2026-08-22 10:30:00</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postmsg"><p>确认，glibc 2.41-1 这个 <code>/lib64</code> 软链变更要手动处理。我就是先 <code>rm -rf /lib64 &amp;&amp; ln -s lib /lib64</code> 再升级的，一次过。不处理的话 glibc 升级后大概率起不来。</p></div>
+		</div>
+	</div>
+</div>
+<div id="p2306902" class="blockpost rowodd">
+	<h2><span><span class="conr">#3</span> <a href="viewtopic.php?pid=2306902#p2306902">2026-08-22 14:00:00</a></span></h2>
+	<div class="box">
+		<div class="inbox">
+			<div class="postmsg"><p>多谢，按这个方法先处理了 /lib64 再升 glibc，顺利启动。glibc 2.41 这个 /lib64 干预一定要升级前做。</p></div>
+		</div>
+	</div>
+</div>
+</div>
+</body>
+</html>

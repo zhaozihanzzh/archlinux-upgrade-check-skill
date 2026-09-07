@@ -923,6 +923,15 @@ def _emit_sharded_report(result, out_dir):
     subagent that verifies that match.
     """
     os.makedirs(out_dir, exist_ok=True)
+    # Clean stale per-match files from a previous run; otherwise a run
+    # with fewer matches leaves the old match_<k>.json behind, and the
+    # on-disk match count disagrees with report.json's matches list.
+    for name in os.listdir(out_dir):
+        if name.startswith("match_") and name.endswith(".json"):
+            try:
+                os.remove(os.path.join(out_dir, name))
+            except OSError:
+                pass
     matches = result.get("matches", [])
     slim_matches = []
     for k, m in enumerate(matches):

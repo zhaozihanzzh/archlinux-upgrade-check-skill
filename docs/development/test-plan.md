@@ -256,9 +256,8 @@ python3 scripts/skill_eval.py --model <model-id> --output-dir /tmp/layer4
 ```
 archlinux-upgrade-check-skill/
 ├── SKILL.md
-├── references/
-│   ├── design-decisions.md
-│   └── test-plan.md              ← this file
+├── docs/
+│   └── development/              ← design/test docs (this file included)
 ├── scripts/
 │   ├── arch_upgrade_check.py      ← Main script (supports --mock-* flags + ARCH_CHECK_MOCK_DIR env var)
 │   ├── test_integration.py        ← Layer 3: integration test runner (reads evals.json, uses mock)

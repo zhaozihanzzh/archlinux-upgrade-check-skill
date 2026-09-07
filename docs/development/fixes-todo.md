@@ -129,7 +129,7 @@ problem, evidence (line numbers / measured behavior), the fix, and status.
   description with those chars made pi fail to parse the frontmatter, so
   the skill never entered `available_skills` -- it was invisible. The fix
   is a clean `>` folded-scalar block, plain ASCII, no inline code spans /
-  quotes / dashes. See `references/verification-design.md`.
+  quotes / dashes. See `verification-design.md`.
 - **Test**: optional -- skill-creator's description-optimization flow
   (`run_loop.py`). Lower priority than functional fixes.
 
@@ -179,8 +179,8 @@ problem, evidence (line numbers / measured behavior), the fix, and status.
   files visible on disk; GLM-5.2 would `ls ..`, find `SKILL.md`, read it
   and run the script anyway -> delta=0 artifact. Fixed by `--sys-mock`
   (bwrap overlay hides the skill tree; mock `checkupdates`/`pacman`/`pacman.log`
-  consistent with the prompt). See `references/system-mock-design.md` and
-  `references/verification-design.md`.
+  consistent with the prompt). See `system-mock-design.md` and
+  `verification-design.md`.
 
 ### F9. Layer 4 runs each eval only once
 - **Status**: [x]
@@ -302,15 +302,15 @@ problem, evidence (line numbers / measured behavior), the fix, and status.
 
 ### F17. Private model id appeared in example text
 - **Status**: [x]
-- **Evidence**: verified, `opencode-go/deepseek-chat` is NOT in any code
+- **Evidence**: verified, `deepseek-chat` is NOT in any code
   execution path -- `skill_eval.py:218` `--model` is a `required=True` CLI
   arg, value passed by the runner; `:119` just forwards it. The private id
   appeared only in human-facing example text: `README.md`,
-  `docs/testing-guide.md`, `references/test-plan.md`, and `skill_eval.py`'s
+  `testing-guide.md`, `test-plan.md`, and `skill_eval.py`'s
   docstring + argparse `--help`. (No hardcoded logic, so no `.env`/key
   management needed -- that would be over-engineering.)
 - **Fix**: docs desensitization + convention (no `.env`). All example
-  `opencode-go/deepseek-chat` -> placeholder `<your-model>`. README adds a
+  `deepseek-chat` -> placeholder `<your-model>`. README adds a
   note: Layer 4 eval uses a locally-available model passed via `pi -p
   --model`. Real secrets (API keys) belong to pi config, not this repo.
 - **Optional** (later): `--model` optional, falls back to
@@ -398,7 +398,7 @@ The fixes below are done, with measured verification.
   scaffolding moved to README.
 - **F16** [x] SKILL.md Step 1 made descriptive (the script does it), not
   an instruction for the LLM to run commands itself.
-- **F17** [x] private model id desensitized: `opencode-go/deepseek-chat` ->
+- **F17** [x] private model id desensitized: `deepseek-chat` ->
   `<your-model>` (README/docs/skill_eval docstring & help); README adds a
   model-agnostic note. `grep` verified no residual.
 
@@ -461,32 +461,36 @@ methodology survey, framework selection, transparent HTTP mock via
 mitmproxy, system-layer mock via bwrap + PATH shims, the completed mock
 network, date-shim pinning) is in:
 
-- `references/mock-env-design.md` -- transparent HTTP mock (Phase 1)
-- `references/system-mock-design.md` -- system-layer mock (Phase 4)
-- `references/verification-design.md` -- the delta results and what they
+- `mock-env-design.md` -- transparent HTTP mock (Phase 1)
+- `system-mock-design.md` -- system-layer mock (Phase 4)
+- `verification-design.md` -- the delta results and what they
   mean
 
-Headline result (sensenova/glm-5.2, E1, completed mock network + date
-shim + `--sys-mock`):
+Headline results (E1, completed mock network + date shim + `--sys-mock`):
 
-| config | reports shadow/sg? | how |
-|---|---|---|
-| with-skill | 3/3 | script: checkupdates + fetch_bbs id=44 + fetch_bbs_topic 314544 |
-| baseline --mock+sys-mock | 1/1 (also reports) | curls viewforum?id=44 + viewtopic?id=314544 by itself |
+| model | with-skill | baseline | delta |
+|---|---|---|---|
+| GLM-5.2 | 3/3 | 1/1 (curls id=44) | 0 (too systematic) |
+| deepseek-v4-flash | 3/3 | ~1/4 across 4 runs | **positive** (stability + false-positive exclusion) |
 
-The delta is **0** for GLM-5.2: the model is strong enough to curl the
-right BBS board (Pacman & Package Upgrade Issues = id=44, the same board
-the script hardcodes) and follow the shadow topic on its own, without the
-skill. This is an honest result -- it does not mean the skill is
-valueless, only that GLM-5.2 is above the skill's usefulness threshold on
-this task. Measuring a real positive delta needs either a weaker model
-(whose baseline would not curl id=44) or a harder task. Details and the
-recommended next experiment are in `references/verification-design.md`.
+GLM-5.2 is strong/systematic enough to always browse the BBS
+upgrade-issues board (id=44) on its own, so it finds shadow without the
+skill (delta=0). deepseek-v4-flash is capable but NOT reliably
+systematic: across 4 baseline runs it curled id=44 and found shadow
+only once (run 1); the other 3 runs missed it (one curled only news/RSS,
+two searched BBS by package name and reached id=44 too late). With the
+skill it is a stable 3/3, and the worker/inline verification also
+correctly drops the false-positive source (topic 314363's
+glibc/nvidia-utils/pipewire/systemd are judged "incidental mention",
+NOT_RELEVANT). This is the skill's real value: it removes the "does the
+model think to browse the right board" coin-flip and adds systematic
+false-positive exclusion. Concrete curl-by-curl examples are in
+`verification-design.md` ("Concrete examples").
 
 ### Verification
 - Layer 1: 19/19 [x]
 - Layer 2: 104/104 [x] (includes F3's new replies>0 assertion)
 - Layer 3: 9/9 [x]
-- Layer 4: F7/F8/F9 mechanism verified (with-skill 3/3 reports shadow;
-  baseline 1/1 also reports shadow -> delta 0 for GLM-5.2). The mechanism
-  is ready; the positive-delta experiment needs a weaker model.
+- Layer 4: F7/F8/F9 mechanism verified. Positive delta found on
+  deepseek-v4-flash (with-skill 3/3 vs baseline ~1/4 across 4 runs);
+  GLM-5.2 is delta=0 (too systematic). See verification-design.md.

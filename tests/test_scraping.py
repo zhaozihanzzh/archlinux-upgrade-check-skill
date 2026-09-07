@@ -357,9 +357,15 @@ def test_bbs_topic_content_parsing():
 
 
 def test_bbs_topic_necrobump():
-    """Test necrobump detection: topic from 2025 checked with 2026 since_date."""
+    """Test necrobump detection: first post predates the scan window but a
+    recent reply lands inside it (bbs_topic_necrobump.html: first post
+    2026-05-10, replies 2026-08-10/12, since_date 2026-08-01).
+
+    (bbs_topic_314363.html used to double as this fixture, but it was
+    repurposed as an in-window false-positive source for E1, so necrobump
+    now has its own dedicated fixture.)"""
     since_date = datetime(2026, 8, 1, tzinfo=timezone.utc)
-    html = load_fixture('bbs_topic_314363.html')
+    html = load_fixture('bbs_topic_necrobump.html')
 
     first_post, recent_posts, first_post_date, total_pages, recent_count, is_necrobump = \
         parse_bbs_topic_page(html, since_date)

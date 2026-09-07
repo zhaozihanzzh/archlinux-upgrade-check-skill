@@ -1,39 +1,74 @@
 # archlinux-upgrade-check-skill
 
-A skill that checks
-**Arch Linux News** and the **BBS "Pacman & Package Upgrade Issues" forum**
-for anything that might require manual intervention **before** you run
-`pacman -Syu`. Tested on [pi](https://github.com/earendil-works/pi-coding-agent).
+A skill that checks **Arch Linux News** and the **BBS "Pacman & Package
+Upgrade Issues" forum** for anything that might require manual
+intervention **before** you run `pacman -Syu`. Tested on
+[pi](https://github.com/earendil-works/pi-coding-agent).
 
-Before a system upgrade, Arch users may want to read the latest news and forum
-posts. Doing that by hand is tedious — this skill automates it: it figures out
-what you are about to upgrade, scans the official news and the upgrade-issues
-forum since your last upgrade, cross-references every post against your
-package list, and reports only the items that actually affect you.
+Before a system upgrade, Arch users may want to read the latest news and
+forum posts. Doing that by hand is tedious -- this skill automates it: it
+figures out what you are about to upgrade, scans the official news and the
+upgrade-issues forum since your last upgrade, cross-references every post
+against your package list, and reports only the items that actually affect
+you.
 
 ## What it does
 
-1. **Finds your upgrade window** — parses `/var/log/pacman.log` for the date of
-   your most recent `pacman -Syu`, and runs `checkupdates` to list pending
-   upgrades.
-2. **Scans the sources** — scrapes Arch Linux News (14 pages, back to 2002)
-   and the BBS upgrade-issues forum (since inception). HTML is used instead of
-   RSS because the RSS feeds only cover ~9 months (news) and ~25 days (BBS).
-3. **Cross-references** — matches package names from your update list against
-   each news title and forum topic (title, first post, and recent replies).
-   Matching is two-tier: full package name first, then a base-name fallback
-   for hyphenated packages (e.g. `plasma` for `plasma-desktop`), with a
-   blacklist and length gate to kill noise like `linux` / `python` /
-   `archlinux`.
-4. **Verifies and reports** — the LLM examines the per-package evidence
+1. **Finds your upgrade window** -- parses `/var/log/pacman.log` for the
+   date of your most recent `pacman -Syu`, and runs `checkupdates` to list
+   pending upgrades.
+2. **Scans the sources** -- scrapes Arch Linux News (14 pages, back to
+   2002) and the BBS upgrade-issues forum (since inception). HTML is used
+   instead of RSS because the RSS feeds only cover ~9 months (news) and
+   ~25 days (BBS).
+3. **Cross-references** -- matches package names from your update list
+   against each news title and forum topic (title, first post, and recent
+   replies). Matching is two-tier: full package name first, then a
+   base-name fallback for hyphenated packages (e.g. `plasma` for
+   `plasma-desktop`), with a blacklist and length gate to kill noise like
+   `linux` / `python` / `archlinux`.
+4. **Verifies and reports** -- the LLM examines the per-package evidence
    (`title`, `first_post`, `recent_posts`, with snippets and `match_type`)
-   to drop false positives (URL matches, generic mentions) and presents the
-   verified findings to the user, with links.
+   to drop false positives (URL matches, generic mentions) and presents
+   the verified findings to the user, with links.
 
-If your last upgrade was more than a year ago, the scan window is capped to
-12 months and the report sets `lookback_capped: true`, warning you to do
-step-wise upgrades via <https://archive.archlinux.org/> instead of a direct
-`pacman -Syu`.
+If your last upgrade was more than a year ago, the scan window is capped
+to 12 months and the report sets `lookback_capped: true`, warning you to
+do step-wise upgrades via <https://archive.archlinux.org/> instead of a
+direct `pacman -Syu`.
+
+## Limitations (what it does NOT do)
+
+This skill is a **pre-flight check, not a guarantee**. It scans two
+sources (official News + the BBS upgrade-issues forum) and lets an LLM
+judge the hits. It does NOT cover:
+
+- **Other sources** -- AUR comments, other BBS boards, IRC, the
+  arch-dev-public mailing list, bug trackers, and non-English community
+  forums. Scanning is limited to archlinux.org News and the BBS "Pacman &
+  Package Upgrade Issues" board (forum id 44); issues discussed only
+  elsewhere are invisible to this skill. (Posts in any language that DO
+  appear on the scanned board are still matched -- package names are
+  ASCII and the verifying LLM is multilingual.)
+- **Brand-new posts** -- the BBS scrape has a small lag; a thread posted
+  hours before your upgrade may not be scanned yet.
+- **Package names not mentioned at all** -- matching is by explicit
+  package-name string in the title, first post, or replies. A thread
+  whose title lacks the name is still caught (the body is scanned too);
+  only a thread that never names the package (e.g. a pure symptom report
+  like "system won't boot" with no "glibc" anywhere) cannot be linked to
+  your update list.
+- **Partial-upgrade risk** -- the skill does not detect that you ran
+  `pacman -Sy` without `-u` (a common Arch footgun); it only checks
+  news/forum content, not your pacman history.
+- **LLM judgement** -- the final RELEVANT / NOT_RELEVANT verdict is an
+  LLM call; it can over-report (flag a routine upgrade as intervention) or
+  under-report (miss an incidental mention). Always read the linked
+  thread yourself before acting.
+
+**Before upgrading**, still: read the pacman output during `-Syu`, keep a
+backup / timeshift, and know how to rollback (downgrade via
+`/var/cache/pacman/pkg`).
 
 ## Repository layout
 
@@ -42,143 +77,101 @@ archlinux-upgrade-check-skill/
 ├── SKILL.md                     # instructions the LLM follows
 ├── scripts/
 │   ├── arch_upgrade_check.py    # the checker script (the workhorse)
-│   ├── test_integration.py      # Layer 3 integration tests (offline mock)
-│   └── skill_eval.py            # Layer 4 end-to-end eval via `pi -p --skill`
-├── tests/                       # Layer 1–2 unit tests + HTML fixtures
-├── evals/                       # eval definitions + mock data (e1/e2/e3)
-├── references/                  # design decisions & test plan
-└── docs/testing-guide.md        # the four-layer testing strategy
+│   ├── test_integration.py      # integration tests (offline mock)
+│   └── skill_eval.py            # end-to-end eval via `pi -p`
+├── tests/                       # unit tests + HTML fixtures
+├── evals/                       # eval definitions + mock data
+└── docs/                        # testing + development notes
 ```
-
 
 ## Example run
 
-The interaction below was captured by spawning `pi` with the skill and an prompt, using mock data (`evals/mock/e1`) so it is reproducible
-offline:
+The interaction below was captured by spawning `pi` with the skill and a
+prompt, using mock data (`evals/mock/e1`) so it is reproducible offline:
 
 ```bash
 cd archlinux-upgrade-check-skill
 export PI_OFFLINE=1 ARCH_CHECK_MOCK_DIR="$PWD/evals/mock/e1"
-pi -p --skill "$PWD" --model <your-model> \
+pi -p --skill "$PWD" --model <provider/model> \
   "I'm about to run pacman -Syu on my Arch machine. Before that, please
-   check Arch Linux official news and the BBS Pacman & Package Upgrade
+   check Arch Linux official news and the BBS Pacman and Package Upgrade
    Issues forum for anything that might need manual intervention. I last
    updated about two weeks ago."
 ```
 
-### Reproducible JSON report (from the script)
-
-With the same mock data, the script produces:
-
-```json
-{
-  "status": "has_matches",
-  "since_date": "2026-08-17",
-  "last_upgrade": "2026-08-17",
-  "lookback_capped": false,
-  "packages_count": 6,
-  "matches": [
-    {
-      "type": "bbs",
-      "date": "2026-08-25",
-      "title": "sg dropped from shadow?",
-      "link": "https://bbs.archlinux.org/viewtopic.php?id=314544",
-      "topic_id": "314544",
-      "matched_packages": ["shadow"],
-      "title_matched": ["shadow"],
-      "package_evidence": {
-        "shadow": [
-          { "source": "title", "snippet": "sg dropped from shadow?" }
-        ]
-      },
-      "is_necrobump": false,
-      "replies": 0
-    }
-  ],
-  "match_count": 1
-}
-```
-
-### Sample agent output
-
-The agent verifies the candidate match against the user's update list and
-reports back:
+The script writes a **sharded JSON report** (a slim `report.json` summary
+plus one `match_<k>.json` per candidate match with the full post text).
+The LLM reads the slim report, then verifies each match and reports back,
+for example:
 
 ```
-## Verification of candidate matches
+## Upgrade Check Results
 
-### Match: BBS Topic "sg dropped from shadow?" (Aug 25)
-- shadow → RELEVANT. Title directly mentions the package. The topic is
-  about the `sg` command being dropped from the `shadow` package.
-  You have shadow pending upgrade — this is exactly the upgrade in question.
+Last full upgrade: 2026-08-17 (about 2 weeks ago) - 6 packages to update
 
-None of the other scanned news articles or forum topics affect packages in
-your update list.
-
-## ⚠ Upgrade Check Results
-
-Last full upgrade: 2026-08-17 (about 2 weeks ago) · 6 packages to update
-
-### 🔴 Issue Found: `shadow` package — `sg` command removed
+### Issue Found: `shadow` package - `sg` command removed
 Topic: https://bbs.archlinux.org/viewtopic.php?id=314544 (Aug 25, 2026)
 
-The `shadow` package has dropped the `sg` command. This is the version you'll
-be updating to.
+The `shadow` package has dropped the `sg` command. This is the version
+you'll be updating to.
 
 Action: If you use `sg` (the group-switching command), it will be missing
 after the update. Switch to `newgrp` (still in shadow) or
 `sudo -g <group>`.
 
-### ✅ No other issues found
-Safe to proceed with `pacman -Syu`, but be aware `sg` will be gone after the
-`shadow` update.
+### No other issues found
+Safe to proceed with `pacman -Syu`, but be aware `sg` will be gone after
+the `shadow` update.
 ```
 
-## The script directly
+## Running the script directly
 
-You can also run the checker outside of an LLM session:
+You can run the checker outside an LLM session (for pipes, cron, or
+inspection). The full option list is in the script's docstring and
+`--help`; the common ones:
 
 ```bash
 # print JSON to stdout (for pipes / inspection)
 python3 scripts/arch_upgrade_check.py --json
 
-# write JSON to a single file — stdout stays quiet; a one-line confirmation
-# goes to stderr. Use for pipes / humans / when no subagent is available.
-python3 scripts/arch_upgrade_check.py --report-file /tmp/report.json
-
-# --report-dir: write a slim report.json + one match_<k>.json per match
-# (recommended — keeps main context small; subagents load match files on demand)
-python3 scripts/arch_upgrade_check.py --report-dir /tmp/arch-upgrade-check
+# write a sharded report (slim report.json + per-match files; recommended)
+python3 scripts/arch_upgrade_check.py --report-dir "$(mktemp -d /tmp/arch-upgrade-check.XXXXXX)"
 
 # scan a custom window instead of "since last upgrade"
 python3 scripts/arch_upgrade_check.py --days 90 --json
 ```
 
-Flags for reproducible / offline runs: `--mock-pacman-log`,
-`--mock-checkupdates`, `--mock-http-dir`, or just set
-`ARCH_CHECK_MOCK_DIR=<dir>` to pick up `<dir>/pacman.log`,
-`<dir>/checkupdates.txt`, and `<dir>/http/` automatically.
+The JSON report has `status`, `since_date`, `lookback_capped`,
+`packages_count`, and a `matches` array; each match carries
+`matched_packages`, `package_evidence`, and the post text. Run
+`python3 scripts/arch_upgrade_check.py --help` for the mock /
+reproducibility flags (`--mock-pacman-log`, `--mock-checkupdates`,
+`--mock-http-dir`, or `ARCH_CHECK_MOCK_DIR=<dir>`).
 
 ## Testing
 
-Four layers, all but Layer 4 fully offline:
+Four layers, layers 1-3 fully offline:
+
+- **Layers 1-2 -- unit tests** (`tests/test_find_packages.py`,
+  `tests/test_scraping.py`): the matching and scraping functions in
+  isolation.
+- **Layer 3 -- integration** (`scripts/test_integration.py`): the full
+  script on offline mock data (checkupdates + pacman.log + HTTP
+  fixtures).
+- **Layer 4 -- end-to-end** (`scripts/skill_eval.py`): `pi -p` with the
+  skill against mock data, graded by assertions. Needs pi + an API key.
 
 ```bash
-# Layer 1–2: unit tests (~0.1s)
+# Layers 1-2 (~0.1s)
 python3 tests/test_find_packages.py
 python3 tests/test_scraping.py
 
-# Layer 3: script integration tests on mock data (~15s)
+# Layer 3 (~15s)
 python3 scripts/test_integration.py
 
-# Layer 4: end-to-end skill eval via `pi -p --skill` (needs pi + API key)
-# Replace <your-model> with a model id your local `pi` can serve
-# (e.g. a provider/model you have configured). The skill itself is
-# model-agnostic — it only needs a model that can read SKILL.md and run scripts.
-python3 scripts/skill_eval.py --model <your-model>
+# Layer 4 (needs pi + API key; replace <provider/model>)
+python3 scripts/skill_eval.py --model <provider/model>
 ```
 
-See [`docs/testing-guide.md`](docs/testing-guide.md) and
-[`references/design-decisions.md`](references/design-decisions.md) for the
-rationale behind the matching logic, the lookback cap, and the choice of HTML
-scraping over RSS.
+See [`docs/development/`](docs/development/) for the testing strategy,
+mock environment, evaluation rationale, and the change log.
