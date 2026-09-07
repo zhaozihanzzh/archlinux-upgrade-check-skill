@@ -29,10 +29,10 @@ If the host is not Arch Linux, the script detects this, prints a clear error to 
 Run this first, before reporting anything. It is the source of truth for which packages and topics to report -- do not substitute your own web browsing.
 
 ```bash
-python3 <skill-dir>/scripts/arch_upgrade_check.py --report-dir /tmp/arch-upgrade-check
+python3 <skill-dir>/scripts/arch_upgrade_check.py --report-dir "$(mktemp -d /tmp/arch-upgrade-check.XXXXXX)"
 ```
 
-`<skill-dir>` is this skill's directory in your environment (the directory containing this `SKILL.md`).
+`<skill-dir>` is this skill's directory in your environment (the directory containing this `SKILL.md`). Each run must use a fresh unique directory (the `mktemp` above makes one, with the `arch-upgrade-check.` prefix so you can tell it apart from other temp dirs). The script prints the report directory to stderr (`Slim report written to <dir>/report.json`); read that `<dir>` from the script's stderr output and use it to read `report.json` and `match_*.json` below. Do not hard-code or reuse a report directory across runs.
 
 This script scrapes Arch Linux News and BBS (Pacman & Package Upgrade Issues forum), cross-references against your package update list, and writes a **sharded report** to the directory you name with `--report-dir`:
 
