@@ -170,6 +170,35 @@ python3 scripts/skill_eval.py --model <your-model> --baseline --output-dir /tmp/
 python3 scripts/skill_eval.py --model <your-model> --repeat 3
 ```
 
+### Portability: `--no-extensions` and your model provider
+
+`skill_eval.py` runs pi with `--no-extensions` (both with-skill and
+baseline). This is deliberate: it disables `web_search` / `fetch_content`
+so the LLM cannot shortcut by scraping archlinux.org itself -- it must
+read SKILL.md and run the bundled script. **But `--no-extensions` also
+disables extension discovery**, so if your pi setup relies on an
+extension to provide a model provider (e.g. a custom provider-extension
+that registers an API endpoint), that extension will NOT load and your
+model will be unavailable under the eval.
+
+If that is your situation, edit `skill_eval.py`'s `run_pi`:
+
+- Remove `--no-extensions` (and accept that the model can web-search --
+  the mock proxy will still intercept archlinux.org curls, but other
+  web escapes become possible), OR
+- Keep `--no-extensions` but add your provider extension explicitly
+  with `pi_cmd.extend(['-e', '/path/to/your-provider-extension.ts'])`,
+  the same way the bundled `nvidia-rate-limit-retry` extension is loaded
+  via `-e` (see `RETRY_EXT` in `skill_eval.py`).
+
+The eval already loads `nvidia-rate-limit-retry` via `-e` under
+`--no-extensions` (for 429 auto-retry); follow that pattern for your
+own extensions. The `RETRY_EXT` path is also hardcoded to the author's
+machine (`~/.pi/agent/extensions/...`); if you do not have that file it
+is silently skipped (`os.path.exists` guard), so it will not break your
+run, but you may want to point it at your own 429-retry extension if you
+have one.
+
 ### Output structure
 
 ```
