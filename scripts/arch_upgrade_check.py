@@ -582,19 +582,40 @@ def fetch_bbs_topic(topic_id, since_date):
     first_post_content, recent_posts_content, first_post_date, total_pages, recent_count, is_necrobump = \
         parse_bbs_topic_page(html, since_date)
 
-    if total_pages > 1 and recent_count == 0:
-        last_url = f"https://bbs.archlinux.org/viewtopic.php?id={topic_id}&p={total_pages}"
-        req = Request(last_url, headers={"User-Agent": "ArchUpgradeCheck/1.0"})
-        try:
-            with _urlopen(req, timeout=15) as resp:
-                last_html = resp.read().decode("utf-8", errors="replace")
-            _, last_recent_content, _, _, last_recent_count, _ = \
-                parse_bbs_topic_page(last_html, since_date)
-            if last_recent_content:
-                recent_posts_content = last_recent_content
-                recent_count = last_recent_count
-        except Exception as e:
-            print(f"    ⚠ Failed to fetch topic {topic_id} last page: {e}", file=sys.stderr)
+    if total_pages > 1:
+        # FluxBB paginates oldest-first (page 1 = original post + earliest
+        # replies, page N = newest). Posts at/after since_date live in a
+        # contiguous run of the LATEST pages. Scan backwards from the last
+        # page; stop at the first page with no post >= since_date (older
+        # pages are older still). Collect every >= since_date post across
+        # those pages so the LLM sees the full recent evidence -- not just
+        # page 1 (misses newer replies on later pages) and not only the
+        # last page (misses mid-thread replies when since_date falls in a
+        # middle page).
+        recent_parts = []
+        if recent_count > 0:
+            recent_parts.append(recent_posts_content)  # page 1's recent
+        tail_parts = []
+        for p in range(total_pages, 1, -1):  # last page down to page 2
+            page_url = f"https://bbs.archlinux.org/viewtopic.php?id={topic_id}&p={p}"
+            req = Request(page_url, headers={"User-Agent": "ArchUpgradeCheck/1.0"})
+            try:
+                with _urlopen(req, timeout=15) as resp:
+                    page_html = resp.read().decode("utf-8", errors="replace")
+                _, page_recent, _, _, page_count, _ = \
+                    parse_bbs_topic_page(page_html, since_date)
+            except Exception as e:
+                print(f"    ⚠ Failed to fetch topic {topic_id} page {p}: {e}", file=sys.stderr)
+                break
+            if page_count == 0:
+                break  # this page is all older than since_date; earlier pages too
+            tail_parts.append(page_recent)
+            recent_count += page_count
+        # tail_parts is [pageN, pageN-1, ..., pageK] (reverse scan order);
+        # reverse to chronological order [pageK, ..., pageN] then append page 1.
+        recent_parts.extend(reversed(tail_parts))
+        if recent_parts:
+            recent_posts_content = "\n---\n".join(recent_parts)
 
     return first_post_content, recent_posts_content, first_post_date, total_pages, recent_count, is_necrobump
 

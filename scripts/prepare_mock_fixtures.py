@@ -40,6 +40,11 @@ URL_FIXTURE_MAP = {
     "https://bbs.archlinux.org/viewtopic.php?id=314590": "bbs_topic_314590.html",
     "https://bbs.archlinux.org/viewtopic.php?id=314363": "bbs_topic_314363.html",
     "https://bbs.archlinux.org/viewtopic.php?id=314096": "bbs_topic_solved.html",
+    # Multipage topic (3 pages) for testing the backwards-scan pagination fix.
+    # page 1 = old posts (< since_date), pages 2-3 = new posts (>= since_date).
+    "https://bbs.archlinux.org/viewtopic.php?id=314999": "bbs_topic_314999_p1.html",
+    "https://bbs.archlinux.org/viewtopic.php?id=314999&p=2": "bbs_topic_314999_p2.html",
+    "https://bbs.archlinux.org/viewtopic.php?id=314999&p=3": "bbs_topic_314999_p3.html",
 }
 
 # ── E1: regular-upgrade (14 days) ──

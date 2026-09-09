@@ -494,3 +494,24 @@ false-positive exclusion. Concrete curl-by-curl examples are in
 - Layer 4: F7/F8/F9 mechanism verified. Positive delta found on
   deepseek-v4-flash (with-skill 3/3 vs baseline ~1/4 across 4 runs);
   GLM-5.2 is delta=0 (too systematic). See verification-design.md.
+
+## External review (CHECK.md) -- 2026-09
+
+A static review (CHECK.md) raised 10 items. Disposition:
+
+| # | Issue | Disposition |
+|---|-------|-------------|
+| 1 | lookback_capped text/field mismatch under `--days>365` | Not fixed (minor; only hits script-only `--days`, SKILL never passes `--days`). Text assumes "last upgrade over a year" but `--days` is a manual window override. |
+| 2 | Multi-page BBS topic: only page 1 (+last page if page 1 empty) fetched | **Fixed.** `fetch_bbs_topic` now scans backwards from the last page, stops at the first page with no `>= since_date` post, and merges every collected page. Covered by `test_fetch_bbs_topic_multipage` (fixture `bbs_topic_314999` p1/p2/p3). FluxBB paginates 25/page, so 26+ replies multi-page. |
+| 3 | `--days` override leaves `last_upgrade: null` | Same as #1 (minor). |
+| 4 | HTML regex brittle if Arch re-skins the site | Not fixed (deferred; README Limitations states it). |
+| 5 | `Today`/`Yesterday` rows skipped (today's posts dropped) | **Fixed.** `parse_bbs_page` + `parse_bbs_topic_page` now resolve Today/Yesterday to the run's `now` (UTC) instead of `continue`. |
+| 6 | Mock has two channels (override + http-dir) | Not an issue (reviewer agreed). |
+| 7 | `find_snippet` base-match skips `_COMMON_BASE_BLACKLIST` | Not fixed (latent; front-filter prevents blacklist packages from reaching `find_snippet`, so no current mis-fire). |
+| 8 | `RETRY_EXT` hardcoded; `--no-extensions` blocks caller's provider extension | **Documented.** testing-guide now has a "Portability" subsection: remove `--no-extensions` or add `-e <your-provider-ext>`. Code reads `NVIDIA_PROVIDER_IDS` from env (no hardcoded provider ids). |
+| 9 | Stale artifacts (pycache, .proxy-env) | Already .gitignored; `git status` clean. |
+| 10 | Dead param `since_date` in `find_news_matches` | Not fixed (minor; news already pre-filtered by `fetch_news`). |
+
+Net: #2 and #5 fixed (real correctness bugs), #8 documented, #4 deferred per
+decision, #1/3/7/10 are minor/latent and left for now. CHECK.md was accurate
+on all 10 (no false positives).

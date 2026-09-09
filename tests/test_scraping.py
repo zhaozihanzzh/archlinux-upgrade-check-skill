@@ -512,6 +512,41 @@ def test_find_news_matches():
                  len(m["matched_packages"]) > 0)
 
 
+def test_fetch_bbs_topic_multipage():
+    """Multi-page topic: since_date in a middle page -> the backwards scan
+    must collect ALL pages whose posts are >= since_date, not just page 1
+    (which only has old posts here) or only the last page.
+
+    Fixture bbs_topic_314999 (3 pages):
+      page 1 = #1 (2025-01, original post mentioning glibc) + #2/#3 (2025, old)
+      page 2 = #4/#5/#6 (2026-08-10/11/12, new, mention glibc)
+      page 3 = #7/#8 (2026-08-20/21, new)
+    since_date = 2026-08-01 -> page 1 all old, pages 2+3 all new.
+    """
+    from scripts.arch_upgrade_check import fetch_bbs_topic, _global_mock_http_dir as _
+    import scripts.arch_upgrade_check as script
+
+    http_dir = os.path.join(os.path.dirname(__file__), '..', 'evals', 'mock', 'e1', 'http')
+    old = script._global_mock_http_dir
+    script._global_mock_http_dir = http_dir
+    try:
+        since = datetime(2026, 8, 1, tzinfo=timezone.utc)
+        fp, recent, fpd, tp, rc, nb = fetch_bbs_topic('314999', since)
+        test("multipage: total_pages == 3", tp == 3, f"total_pages={tp}")
+        test("multipage: is_necrobump (first post 2025 < since)", nb == True, f"is_necrobump={nb}")
+        test("multipage: first_post contains glibc", "glibc" in (fp or ""), f"fp={fp[:60]!r}")
+        # Must collect posts from BOTH page 2 and page 3, not just one of them.
+        test("multipage: recent_count == 5 (p2 #4-6 + p3 #7-8)", rc == 5, f"recent_count={rc}")
+        test("multipage: recent includes page 2 post (#4 necrobump)",
+             "#4" in (recent or ""), f"recent={recent[:120]!r}")
+        test("multipage: recent includes page 3 post (#7 latest)",
+             "#7" in (recent or ""), f"recent={recent[:120]!r}")
+        # Page 1 old posts (#2, #3) must NOT appear in recent.
+        test("multipage: recent excludes page 1 old post (#2)",
+             "#2" not in (recent or ""), f"recent={recent[:120]!r}")
+    finally:
+        script._global_mock_http_dir = old
+
 # ════════════════════════════════════════════════
 # Run all tests
 # ════════════════════════════════════════════════
@@ -548,6 +583,10 @@ test_fetch_news_stops_correctly()
 print()
 print("=== News matching ===")
 test_find_news_matches()
+
+print()
+print("=== BBS topic multi-page (backwards scan) ===")
+test_fetch_bbs_topic_multipage()
 
 print()
 print(f"  {'=' * 50}")
