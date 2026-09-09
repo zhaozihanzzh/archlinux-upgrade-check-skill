@@ -411,7 +411,14 @@ def fetch_bbs_page(page_num):
                 date_match.group(1), "%Y-%m-%d %H:%M:%S"
             ).replace(tzinfo=timezone.utc)
         elif "Today" in row or "Yesterday" in row:
-            continue
+            # FluxBB shows "Today/Yesterday HH:MM:SS" for posts from the
+            # last 48h. Resolve to an absolute date using the run's "now"
+            # (UTC, same basis as since_date). Time-of-day is ignored -- the
+            # since_date comparison is day-granular, and we must NOT skip
+            # today's posts (they are exactly what an upgrade-check cares
+            # about most).
+            now = datetime.now(timezone.utc)
+            date_obj = now if "Today" in row else now - timedelta(days=1)
         else:
             continue
 
@@ -510,10 +517,15 @@ def parse_bbs_topic_page(html, since_date):
         post_num = int(num_match.group(1))
 
         date_match = re.search(r'">(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})</a>', block)
-        if not date_match:
+        if date_match:
+            post_date = datetime.strptime(date_match.group(1), "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+        elif "Today" in block or "Yesterday" in block:
+            # FluxBB shows "Today/Yesterday" for posts from the last 48h;
+            # resolve to an absolute date (see parse_bbs_page for rationale).
+            now = datetime.now(timezone.utc)
+            post_date = now if "Today" in block else now - timedelta(days=1)
+        else:
             continue
-
-        post_date = datetime.strptime(date_match.group(1), "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
 
         if first_post_date is None:
             first_post_date = post_date
