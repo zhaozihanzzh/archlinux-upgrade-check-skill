@@ -492,15 +492,23 @@ def fetch_bbs(since_date):
 
 # ──────────── Step 5: Fetch BBS Topic Content ────────────
 
-def parse_bbs_topic_page(html, since_date):
+def parse_bbs_topic_page(html, since_date, topic_id=None):
     """
     Parse a BBS topic page, extract posts newer than since_date.
     Returns (content_text, first_post_date, total_pages, recent_count).
+
+    topic_id: if given, count ONLY this topic's own pagination links
+    (viewtopic.php?id=<topic_id>&p=N). Without it, any viewtopic p= link in
+    the HTML is counted -- including links in post bodies that quote OTHER
+    topics, which inflates total_pages and breaks multi-page fetching.
     """
     posts = []
 
     total_pages = 1
-    page_links = re.findall(r'viewtopic\.php\?id=\d+&amp;p=(\d+)', html)
+    if topic_id is not None:
+        page_links = re.findall(rf'viewtopic\.php\?id={topic_id}&amp;p=(\d+)', html)
+    else:
+        page_links = re.findall(r'viewtopic\.php\?id=\d+&amp;p=(\d+)', html)
     if page_links:
         total_pages = max(int(p) for p in page_links)
 
@@ -580,7 +588,7 @@ def fetch_bbs_topic(topic_id, since_date):
         return "", "", None, 1, 0, False
 
     first_post_content, recent_posts_content, first_post_date, total_pages, recent_count, is_necrobump = \
-        parse_bbs_topic_page(html, since_date)
+        parse_bbs_topic_page(html, since_date, topic_id=topic_id)
 
     if total_pages > 1:
         # FluxBB paginates oldest-first (page 1 = original post + earliest
@@ -603,7 +611,7 @@ def fetch_bbs_topic(topic_id, since_date):
                 with _urlopen(req, timeout=15) as resp:
                     page_html = resp.read().decode("utf-8", errors="replace")
                 _, page_recent, _, _, page_count, _ = \
-                    parse_bbs_topic_page(page_html, since_date)
+                    parse_bbs_topic_page(page_html, since_date, topic_id=topic_id)
             except Exception as e:
                 print(f"    ⚠ Failed to fetch topic {topic_id} page {p}: {e}", file=sys.stderr)
                 break
