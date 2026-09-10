@@ -39,6 +39,7 @@ URL_FIXTURE_MAP = {
     "https://bbs.archlinux.org/viewtopic.php?id=314637": "bbs_topic_314637.html",
     "https://bbs.archlinux.org/viewtopic.php?id=314590": "bbs_topic_314590.html",
     "https://bbs.archlinux.org/viewtopic.php?id=314363": "bbs_topic_314363.html",
+    "https://bbs.archlinux.org/viewtopic.php?id=314363&p=2": "bbs_topic_314363_p2.html",
     "https://bbs.archlinux.org/viewtopic.php?id=314096": "bbs_topic_solved.html",
     # Multipage topic (3 pages) for testing the backwards-scan pagination fix.
     # page 1 = old posts (< since_date), pages 2-3 = new posts (>= since_date).

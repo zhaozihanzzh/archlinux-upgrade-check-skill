@@ -37,7 +37,11 @@ python3 <skill-dir>/scripts/arch_upgrade_check.py --report-dir "$(mktemp -d /tmp
 This script scrapes Arch Linux News and BBS (Pacman & Package Upgrade Issues forum), cross-references against your package update list, and writes a **sharded report** to the directory you name with `--report-dir`:
 
 - `report.json` -- a slim summary (`status`, `since_date`, `lookback_capped`, `packages_count`, and per-match pointers: title/link/matched_packages/`is_necrobump`/`match_file`). It deliberately omits the full `packages_to_update` list (verification doesn't need it) and the forum-post text.
-- `match_<k>.json` -- one file per candidate match, holding that match's **full** `package_evidence`, `first_post`, and `recent_posts` (untruncated).
+- `match_<k>.json` -- one file per candidate match, holding that match's **full** `package_evidence`, `first_post`, and `recent_posts`. Normal topics are small (a 26-post thread is ~17k chars, loads in one read on any agent). Only a very large multi-page topic (50+ pages, rare) may be capped: the first ~5k chars (early replies) + last ~20k chars (newest replies) are kept with a `[...truncated...]` marker in between -- the newest replies, which hold the resolution status, are always retained.
+
+**`recent_posts` is ordered oldest-to-newest: the newest replies are at the END.** When judging whether a match is a real intervention, the newest replies (at the end of `recent_posts`) are usually the most informative -- they often state whether the issue is solved, still open, or a false alarm.
+
+**Truncation is surfaced, not silent.** Each match (and each entry in `report.json`) has two top-level fields: `recent_posts_truncated` (bool) and `recent_posts_truncated_chars` (int, 0 if none dropped). If `recent_posts_truncated` is `true`, middle replies were omitted (the first ~5k chars and last ~20k chars are always kept, so the original post's context and the newest resolution replies are both present). In that case: base your verdict on the head and tail you can see (the newest replies, which hold the resolution, are retained); there is no way to fetch just the dropped middle posts through this skill, so do not attempt to -- if the head and tail disagree or are inconclusive, mark the package UNCERTAIN rather than guessing.
 
 This split keeps your main conversation context small: you read only the slim `report.json`, and the heavy post text is loaded only by the subagent that verifies a given match (Step 3). The report does not list every pending package -- if you need that list, run `checkupdates` directly.
 
@@ -169,10 +173,12 @@ Key fields for verification:
         ]
       },
       "first_post": "...",        // full first post content (untruncated; in match_<k>.json)
-      "recent_posts": "...",      // full recent replies content (untruncated; in match_<k>.json)
+      "recent_posts": "...",      // replies after since_date, oldest-to-newest; newest at the end. Full for normal topics; very large multi-page topics keep head+tail (see above)
       "is_necrobump": false,      // true if topic predates since_date
       "recent_post_count": 2,     // number of recent posts fetched
-      "total_pages": 1
+      "total_pages": 1,
+      "recent_posts_truncated": false,  // true if middle replies were omitted (head+tail kept)
+      "recent_posts_truncated_chars": 0  // chars dropped from the middle; 0 = none
     }
   ]
 }

@@ -673,6 +673,8 @@ def find_news_matches(news_articles, packages, since_date):
                 "title_matched": sorted(title_matched),
                 "content_matched": sorted(content_matched - title_matched),
                 "content_snippet": content[:500] if content else "",
+                "recent_posts_truncated": False,
+                "recent_posts_truncated_chars": 0,
             })
 
     return matches
@@ -763,6 +765,8 @@ def find_bbs_matches(bbs_topics, packages, since_date):
 
             package_evidence[pkg] = evidence
 
+        _recent_kept, _recent_dropped = _keep_head_tail(recent_posts_content, 5000, 20000)
+
         matches.append({
             "type": "bbs",
             "date": topic["date"],
@@ -775,7 +779,18 @@ def find_bbs_matches(bbs_topics, packages, since_date):
             "recent_matched": sorted(recent_matched - title_matched - first_post_matched),
             "package_evidence": package_evidence,
             "first_post": first_post_content[:1000] if first_post_content else "",
-            "recent_posts": recent_posts_content[:3000] if recent_posts_content else "",
+            # Keep recent_posts full for normal topics (the vast majority are
+            # <25k chars, e.g. a 26-post topic is ~17k). Only very large
+            # multi-page topics (50+ pages, rare) exceed the cap -- for those
+            # we keep the head (early replies) + tail (newest replies, which
+            # hold the resolution status) so the match file stays small
+            # enough for any agent's file reader to load in full without a
+            # silent mid-file truncation that would drop the newest replies.
+            # Surface a top-level flag so the verifying agent knows middle
+            # replies were omitted without having to scan the text.
+            "recent_posts": _recent_kept,
+            "recent_posts_truncated": _recent_dropped > 0,
+            "recent_posts_truncated_chars": _recent_dropped,
             "is_necrobump": is_necrobump,
             "recent_post_count": recent_count,
             "total_pages": total_pages,
@@ -952,6 +967,22 @@ def main():
     }
 
     _emit_output(result, args)
+
+
+def _keep_head_tail(text, head_n, tail_n):
+    """Keep the first head_n chars and last tail_n chars of text, with a
+    marker in between if the middle was dropped. Preserves both early
+    context and the latest evidence (which on multi-page BBS topics lives
+    at the end of recent_posts and would be lost by a naive [:N]).
+
+    Returns (kept_text, dropped_chars) where dropped_chars == 0 means no
+    truncation happened (so callers can surface a top-level flag)."""
+    if not text:
+        return "", 0
+    if len(text) <= head_n + tail_n:
+        return text, 0
+    dropped = len(text) - head_n - tail_n
+    return (text[:head_n] + f"\n...[{dropped} chars truncated]...\n" + text[-tail_n:], dropped)
 
 
 def _emit_sharded_report(result, out_dir):
